@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>Card IQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#070714;--s0:rgba(255,255,255,.035);--s1:rgba(255,255,255,.06);
+  --bd:rgba(110,130,220,.12);--bd2:rgba(110,130,220,.22);
+  --accent:#38BDF8;--accentd:rgba(56,189,248,.14);--accentd2:rgba(56,189,248,.28);
+  --gold:#FBBF24;--goldd:rgba(251,191,36,.13);--goldd2:rgba(251,191,36,.22);
+  --green:#10B981;--greend:rgba(16,185,129,.14);--greend2:rgba(16,185,129,.24);
+  --red:#F87171;--redd:rgba(248,113,113,.13);
+  --amber:#FB923C;--purple:#A78BFA;--purpled:rgba(167,139,250,.14);
+  --text:#EEF0F8;--text2:#A8B0C8;--muted:#555870;
+  --r:14px;--safe-t:env(safe-area-inset-top,44px);--safe-b:env(safe-area-inset-bottom,34px);
+  --nav:54px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{font-family:'Syne',sans-serif;background:var(--ink);color:var(--text);height:100dvh;overflow:hidden;display:flex;flex-direction:column;position:relative}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 55% 35% at 10% 8%,rgba(56,189,248,.07) 0%,transparent 70%),radial-gradient(ellipse 45% 35% at 90% 92%,rgba(251,191,36,.05) 0%,transparent 70%)}
+
+/* header */
+.hdr{flex-shrink:0;padding:calc(var(--safe-t) + 8px) 20px 13px;border-bottom:1px solid var(--bd);background:rgba(7,7,20,.88);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);position:relative;z-index:20}
+.hdr-row{display:flex;align-items:flex-start;justify-content:space-between}
+.wordmark{font-size:25px;font-weight:800;letter-spacing:-1.5px;line-height:1}
+.wordmark em{color:var(--accent);font-style:normal}
+.hdr-sub{font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:500}
+.live-chip{display:flex;align-items:center;gap:5px;background:var(--greend2);border:1px solid rgba(16,185,129,.35);border-radius:20px;padding:5px 10px;font-size:10.5px;font-weight:700;color:var(--green);letter-spacing:.6px;text-transform:uppercase}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulselive 2s ease-in-out infinite}
+@keyframes pulselive{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.45;transform:scale(.75)}}
+
+/* screens */
+.screens{flex:1;overflow:hidden;position:relative;z-index:1}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:16px 16px calc(var(--nav) + var(--safe-b) + 20px);display:none;-webkit-overflow-scrolling:touch}
+.screen::-webkit-scrollbar{display:none}
+.screen.active{display:block;animation:scrin .22s ease both}
+@keyframes scrin{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+/* chat now in floating panel, no screen needed */
+
+/* nav — 7 tabs, label only on active */
+.nav{position:fixed;bottom:0;left:0;right:0;z-index:100;padding:5px 0 calc(var(--safe-b) + 3px);background:rgba(7,7,20,.9);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border-top:1px solid var(--bd);display:flex}
+.ntab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 0;border:none;background:none;cursor:pointer;color:var(--muted);transition:color .18s;font-family:'Syne',sans-serif}
+.ntab.on{color:var(--accent)}
+.ntab-icon{font-size:18px;line-height:1}
+.ntab-lbl{display:none;font-size:8.5px;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+.ntab.on .ntab-lbl{display:block}
+
+/* shared */
+.stitle{font-size:21px;font-weight:800;letter-spacing:-.5px;margin-bottom:13px;line-height:1.1}
+.gcard{background:var(--s0);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;margin-bottom:9px}
+.notice{border-radius:10px;padding:9px 13px;font-size:12.5px;line-height:1.5;margin-bottom:13px}
+.n-green{background:var(--greend);border:1px solid rgba(16,185,129,.25);color:#6EE7B7}
+.n-gold{background:var(--goldd);border:1px solid rgba(251,191,36,.25);color:#FCD34D}
+/* ── FLOATING CHAT ── */
+.chat-fab{position:fixed;bottom:calc(var(--nav) + var(--safe-b) + 12px);right:16px;z-index:150;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1360A0,#38BDF8);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(56,189,248,.35);transition:transform .15s}
+.chat-fab:active{transform:scale(.92)}
+.chat-fab svg{width:22px;height:22px;fill:white}
+.chat-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:160;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.chat-backdrop.on{display:block}
+.chat-panel{position:fixed;bottom:0;left:0;right:0;z-index:170;background:var(--ink2);border-top:1px solid var(--bd);border-radius:20px 20px 0 0;display:flex;flex-direction:column;height:72vh;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,.72,0,1)}
+.chat-panel.on{transform:translateY(0)}
+.chat-panel-hd{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;border-bottom:1px solid var(--bd);flex-shrink:0}
+.chat-panel-title{font-size:15px;font-weight:800;letter-spacing:-.3px}
+.chat-close{background:var(--s1);border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;color:var(--muted);font-size:16px;display:flex;align-items:center;justify-content:center}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:9px}
+.chat-msgs::-webkit-scrollbar{display:none}
+.chat-input-row{display:flex;gap:8px;align-items:flex-end;padding:10px 12px calc(var(--safe-b) + 8px);border-top:1px solid var(--bd);flex-shrink:0;background:rgba(7,7,20,.92)}
+.chatinput{flex:1;background:var(--s1);border:1px solid var(--bd);border-radius:20px;padding:9px 15px;font-size:14px;font-family:'Syne',sans-serif;color:var(--text);outline:none;resize:none;max-height:80px;min-height:38px;line-height:1.4}
+.chatinput::placeholder{color:var(--muted)}
+.sendbtn{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1360A0,#38BDF8);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-shadow:0 3px 12px rgba(56,189,248,.3)}
+.sendbtn svg{width:15px;height:15px;fill:#fff}
+.chip{background:var(--s0);border:1px solid var(--bd);border-radius:16px;padding:6px 12px;font-size:12px;font-weight:600;font-family:'Syne',sans-serif;white-space:nowrap;cursor:pointer;color:var(--text2);transition:all .14s;flex-shrink:0}
+.chip:active{background:var(--accentd);border-color:var(--accentd2);color:var(--accent);transform:scale(.95)}
+.chatlist{display:flex;flex-direction:column;gap:10px}
+.mbot{align-self:flex-start;max-width:92%}.muser{align-self:flex-end;max-width:82%}
+.mbub{padding:10px 14px;border-radius:18px;font-size:13.5px;line-height:1.6}
+.mbot .mbub{background:var(--s1);border:1px solid var(--bd);border-bottom-left-radius:4px}
+.muser .mbub{background:linear-gradient(135deg,#1360A0,#38BDF8);color:#fff;border-bottom-right-radius:4px}
+.mtime{font-size:10px;color:var(--muted);padding:2px 6px;font-family:'JetBrains Mono',monospace}
+.muser .mtime{text-align:right}
+.typing span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--muted);margin:0 2px;animation:tdot 1s ease-in-out infinite}
+.typing span:nth-child(2){animation-delay:.14s}.typing span:nth-child(3){animation-delay:.28s}
+@keyframes tdot{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-4px);opacity:1}}
+
+/* ── SPEND ── */
+.cat-scroll{display:flex;gap:7px;overflow-x:auto;padding:0 0 10px;margin-bottom:4px;-webkit-overflow-scrolling:touch}
+.cat-scroll::-webkit-scrollbar{display:none}
+.catbtn{background:var(--s0);border:1.5px solid var(--bd);border-radius:20px;padding:8px 13px;display:flex;align-items:center;gap:6px;cursor:pointer;transition:all .15s;-webkit-user-select:none;white-space:nowrap;flex-shrink:0}
+.catbtn:active{transform:scale(.96)}
+.catbtn.sel{background:var(--accentd);border-color:rgba(56,189,248,.5)}
+.cat-e{font-size:17px;line-height:1}.cat-n{font-size:12.5px;font-weight:700}
+.cbadge{background:var(--greend);color:var(--green);font-size:9px;font-weight:800;padding:1px 5px;border-radius:4px;text-transform:uppercase;margin-left:2px}
+.cbadge.cbw{background:var(--goldd);color:var(--gold)}
+
+.rslide{animation:rslide .22s ease both}
+@keyframes rslide{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.rhero{border-radius:var(--r);padding:2px;margin-bottom:9px;background:linear-gradient(135deg,rgba(56,189,248,.45),rgba(56,189,248,.08) 45%,rgba(251,191,36,.3))}
+.rhero-in{background:rgba(9,9,22,.92);border-radius:calc(var(--r) - 2px);padding:17px}
+.rtag{font-size:9.5px;font-weight:800;color:var(--accent);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:5px}
+.rname{font-size:23px;font-weight:800;letter-spacing:-.5px;line-height:1.1}
+.rsub{font-size:11.5px;color:var(--muted);margin-bottom:13px;margin-top:3px;font-weight:500}
+.rretrow{display:flex;align-items:flex-end;gap:11px;margin-bottom:12px}
+.rnum{font-family:'JetBrains Mono',monospace;font-size:54px;font-weight:700;line-height:1}
+.rnum.ng{color:var(--green);text-shadow:0 0 28px rgba(16,185,129,.6)}
+.rnum.nb{color:var(--accent);text-shadow:0 0 28px rgba(56,189,248,.6)}
+.rnum.na{color:var(--gold);text-shadow:0 0 28px rgba(251,191,36,.5)}
+.rlbl{font-size:12px;color:var(--muted);padding-bottom:5px;font-weight:500;line-height:1.4}
+.rreason{font-size:13px;color:var(--text2);line-height:1.65;background:var(--s0);border-radius:9px;padding:10px 12px}
+.rcaveat{font-size:12px;color:var(--gold);line-height:1.55;background:var(--goldd);border-radius:9px;padding:9px 12px;margin-top:7px;display:flex;gap:7px;align-items:flex-start}
+.alts-hd{font-size:10.5px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:7px;margin-top:2px}
+.altrow{background:var(--s0);border:1px solid var(--bd);border-radius:11px;padding:11px 13px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:8px}
+.altname{font-size:13.5px;font-weight:700}.altnote{font-size:11px;color:var(--muted);margin-top:2px}
+.altrate{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:var(--accent);white-space:nowrap}
+
+/* amount input + dynamic recommender */
+.amt-row{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.amt-label{font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap}
+.amt-input{flex:1;background:var(--s1);border:1px solid var(--bd2);border-radius:10px;padding:9px 12px;font-size:15px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text);outline:none;width:100%}
+.amt-input::placeholder{color:var(--muted);font-family:'Syne',sans-serif;font-size:13px;font-weight:400}
+.amt-input:focus{border-color:var(--accent)}
+.dynrec{margin-top:4px;animation:rslide .2s ease both}
+.dynrec-hd{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+.rec-row{
+  background:var(--s0);border:1px solid var(--bd);border-radius:12px;
+  padding:11px 13px;margin-bottom:6px;
+  display:flex;align-items:center;gap:10px;
+}
+.rec-row.winner{background:var(--greend);border-color:rgba(16,185,129,.3)}
+.rec-rank{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--muted);width:20px;flex-shrink:0}
+.rec-info{flex:1;min-width:0}
+.rec-card{font-size:13.5px;font-weight:700}
+.rec-note{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.35}
+.rec-boost{font-size:11px;color:var(--green);font-weight:700;margin-top:2px}
+.rec-rate{text-align:right;flex-shrink:0}
+.rec-pct{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700}
+.rec-pct.top{color:var(--green);text-shadow:0 0 14px rgba(16,185,129,.5)}
+.rec-pct.hi{color:var(--green)}
+.rec-pct.md{color:var(--gold)}
+.rec-pct.lo{color:var(--amber)}
+.ms-tag{display:inline-block;background:var(--goldd2);color:var(--gold);font-size:9px;font-weight:800;padding:2px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.4px;margin-left:4px;vertical-align:middle}
+
+/* ── MILESTONES TAB ── */
+.ms-card{background:var(--s0);border:1px solid var(--bd);border-radius:var(--r);padding:15px;margin-bottom:10px;position:relative}
+.ms-card.done{border-color:rgba(16,185,129,.3);background:var(--greend)}
+.ms-card.urgent{border-color:rgba(251,191,36,.3)}
+.ms-header{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:12px}
+.ms-card-name{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px}
+.ms-name{font-size:15px;font-weight:800;line-height:1.2}
+.ms-period{font-size:11px;color:var(--muted);margin-top:2px;font-family:'JetBrains Mono',monospace}
+.ms-eff-rate{text-align:right;flex-shrink:0}
+.ms-eff-lbl{font-size:9px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase}
+.ms-eff-num{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;line-height:1;margin-top:2px}
+.ms-eff-num.boosted{color:var(--green);text-shadow:0 0 16px rgba(16,185,129,.5)}
+.ms-eff-num.base{color:var(--accent)}
+.ms-eff-num.done-c{color:var(--muted)}
+
+/* progress bar */
+.ms-prog-wrap{margin-bottom:10px}
+.ms-prog-labels{display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px}
+.ms-prog-spent{color:var(--text2);font-family:'JetBrains Mono',monospace;font-weight:600}
+.ms-prog-thresh{color:var(--muted);font-family:'JetBrains Mono',monospace}
+.ms-bar{height:4px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden}
+.ms-fill{height:100%;border-radius:3px;transition:width .4s ease}
+
+/* input row */
+.ms-input-row{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+.ms-input-lbl{font-size:11.5px;color:var(--muted);white-space:nowrap;font-weight:600}
+.ms-input{flex:1;background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;font-size:13px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text);outline:none}
+.ms-input:focus{border-color:var(--accent)}
+.ms-txn-btns{display:flex;gap:6px;align-items:center}
+.txn-btn{background:var(--s1);border:1px solid var(--bd);border-radius:8px;padding:6px 14px;font-size:15px;font-weight:700;color:var(--text);cursor:pointer;transition:all .12s;font-family:'Syne',sans-serif}
+.txn-btn:active{background:var(--accentd)}
+
+/* breakdown */
+.ms-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px}
+.ms-bk{background:rgba(255,255,255,.025);border-radius:9px;padding:9px 10px}
+.ms-bk-lbl{font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.ms-bk-val{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700}
+.ms-bk-val.g{color:var(--green)}.ms-bk-val.b{color:var(--accent)}.ms-bk-val.o{color:var(--gold)}.ms-bk-val.r{color:var(--red)}
+
+/* deadline tag */
+.ms-deadline{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.ms-dl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.ms-done-badge{background:var(--greend);color:var(--green);border:1px solid rgba(16,185,129,.35);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;display:inline-flex;align-items:center;gap:4px}
+
+/* txn progress (MRCC) */
+.txn-pips{display:flex;gap:8px;margin-bottom:10px}
+.txn-pip{width:36px;height:36px;border-radius:8px;background:var(--s1);border:1.5px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;transition:all .15s}
+.txn-pip.done{background:var(--greend);border-color:rgba(16,185,129,.4)}
+
+/* ── CARDS ── */
+.ccard-row{display:flex;gap:12px;align-items:center;padding:13px 15px;cursor:pointer}
+.ccard-art{width:116px;height:72px;border-radius:8px;flex-shrink:0;position:relative;overflow:hidden}
+.ccard-art-inner{position:absolute;inset:0;padding:9px 11px;display:flex;flex-direction:column;justify-content:space-between}
+.ccard-chip{width:18px;height:13px;background:rgba(255,255,255,.28);border-radius:2px}
+.ccard-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.85);letter-spacing:.3px;text-shadow:0 1px 3px rgba(0,0,0,.6);line-height:1.3}
+.ccard-iss{font-size:8px;color:rgba(255,255,255,.5)}
+.ctext{flex:1;min-width:0}.cname{font-size:14.5px;font-weight:700}.ciss{font-size:11.5px;color:var(--muted);margin-top:2px}
+.cchev{color:var(--muted);font-size:17px;transition:transform .2s;flex-shrink:0}
+.cchev.op{transform:rotate(90deg)}
+.cdet{padding:0 15px 13px;display:none}.cdet.op{display:block}
+.primary-badge{display:inline-flex;align-items:center;gap:5px;background:var(--greend2);border:1px solid rgba(16,185,129,.35);border-radius:6px;padding:4px 9px;font-size:10px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.tags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:11px}
+.tag{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.tb{background:var(--accentd);color:var(--accent)}.tg{background:var(--greend);color:var(--green)}.to{background:var(--goldd);color:var(--gold)}.tr{background:var(--redd);color:var(--red)}.tp{background:var(--purpled);color:var(--purple)}.tl{background:var(--greend2);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.earns{margin-bottom:11px}
+.erow{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--bd);gap:8px}
+.erow:last-child{border-bottom:none}
+.ecat{font-size:12px;color:var(--text2);flex:1;line-height:1.35}
+.erate{font-family:'JetBrains Mono',monospace;font-size:13.5px;font-weight:700;color:var(--accent);white-space:nowrap}
+.eunit{font-size:10.5px;color:var(--muted);white-space:nowrap}
+.infobox{background:rgba(255,255,255,.025);border:1px solid var(--bd);border-radius:9px;padding:11px 13px;font-size:12.5px;color:var(--text2);line-height:1.7}
+.ig{color:var(--green);font-weight:700}.iw{color:var(--red);font-weight:700}.io{color:var(--gold);font-weight:700}.ia{color:var(--accent);font-weight:700}
+
+/* ── OPTIMIZE ── */
+.opthero{background:var(--s0);border:1px solid var(--bd);border-radius:var(--r);padding:17px;margin-bottom:11px}
+.opthd{font-size:15px;font-weight:800;margin-bottom:13px}
+.rtrow{display:flex;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd);gap:8px}
+.rtrow:last-child{border-bottom:none}
+.rtspend{font-size:12.5px;color:var(--text2);flex:1;line-height:1.3}.rtcard{font-size:10.5px;color:var(--muted)}
+.rtval{font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:700;white-space:nowrap}
+.rtval.top{color:var(--green);font-size:20px}.rtval.hi{color:var(--green)}.rtval.md{color:var(--gold)}.rtval.lo{color:var(--amber)}
+.newtag{background:var(--greend);color:var(--green);font-size:8.5px;font-weight:800;padding:2px 5px;border-radius:3px;text-transform:uppercase;letter-spacing:.4px;vertical-align:middle;margin-left:3px}
+.valrow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bd)}
+.valrow:last-child{border-bottom:none}
+.valname{font-size:13px;color:var(--text2)}.valnum{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:var(--gold)}
+.capcard{background:var(--s0);border:1px solid var(--bd);border-radius:11px;padding:13px 15px;margin-bottom:7px}
+.caphd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.capname{font-size:13.5px;font-weight:700}.capsub{font-size:11px;color:var(--muted);margin-top:2px}.capval{font-family:'JetBrains Mono',monospace;font-size:15.5px;font-weight:700;color:var(--accent);white-space:nowrap}
+.capbar{height:2.5px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}.capfill{height:100%;border-radius:2px}
+.chain{background:var(--s0);border:1px solid var(--bd);border-radius:11px;padding:13px 15px;margin-bottom:7px}
+.chaintitle{font-size:13.5px;font-weight:800;margin-bottom:7px}.chainsteps{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text2);line-height:1.8}
+.chainyield{font-size:12.5px;font-weight:700;color:var(--green);margin-top:7px}.chainnote{font-size:11.5px;color:var(--muted);margin-top:3px}
+.hzitem{display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--bd)}.hzitem:last-child{border-bottom:none}
+.hzdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.hztext{font-size:12.5px;color:var(--text2);line-height:1.55}.hzdate{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ── NEWS ── */
+.filter-chips{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:13px}
+.filter-chips::-webkit-scrollbar{display:none}
+.fchip{background:var(--s0);border:1px solid var(--bd);border-radius:16px;padding:6px 13px;font-size:12px;font-weight:700;font-family:'Syne',sans-serif;white-space:nowrap;cursor:pointer;color:var(--muted);transition:all .14s;flex-shrink:0}
+.fchip.active{background:var(--accentd);border-color:var(--accentd2);color:var(--accent)}
+.fchip:active{transform:scale(.95)}
+.news-card{background:var(--s0);border:1px solid var(--bd);border-radius:var(--r);padding:14px 15px;margin-bottom:9px;position:relative;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.news-card:active{border-color:var(--bd2)}
+.news-card.hidden{display:none}
+.news-hot-glow{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--red),var(--amber),var(--gold));animation:hglow 2s ease-in-out infinite}
+@keyframes hglow{0%,100%{opacity:.8}50%{opacity:.4}}
+.news-top{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
+.news-src{font-size:10px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 7px;border-radius:5px;flex-shrink:0;white-space:nowrap}
+.src-dip{background:rgba(167,139,250,.15);color:var(--purple)}
+.src-lfal{background:rgba(56,189,248,.12);color:var(--accent)}
+.src-cm{background:rgba(16,185,129,.12);color:var(--green)}
+.src-ll{background:rgba(251,191,36,.12);color:var(--gold)}
+.src-ai{background:rgba(248,113,113,.12);color:var(--red)}
+.news-hot-pill{background:rgba(248,113,113,.18);color:var(--red);border:1px solid rgba(248,113,113,.3);font-size:9px;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:.5px;text-transform:uppercase;display:inline-flex;align-items:center;gap:3px}
+.hot-blink{width:5px;height:5px;border-radius:50%;background:var(--red);animation:pulselive 1.5s ease-in-out infinite}
+.news-title{font-size:14.5px;font-weight:800;line-height:1.3;margin-bottom:5px;letter-spacing:-.2px}
+.news-summary{font-size:12.5px;color:var(--text2);line-height:1.6;margin-bottom:8px}
+.news-warn{background:var(--redd);border-radius:7px;padding:6px 10px;font-size:12px;color:var(--red);margin-bottom:8px;line-height:1.4}
+.news-impact{background:var(--greend);border-radius:7px;padding:6px 10px;font-size:12px;color:var(--green);line-height:1.4}
+.news-footer{display:flex;align-items:center;justify-content:space-between;margin-top:8px}
+.news-tags{display:flex;gap:5px;flex-wrap:wrap}
+.ntag{font-size:10px;font-weight:600;color:var(--muted);background:rgba(255,255,255,.04);padding:2px 7px;border-radius:10px}
+.news-exp{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--gold);font-weight:700}
+.news-read{font-size:12px;font-weight:700;color:var(--accent);text-decoration:none;display:flex;align-items:center;gap:3px}
+.news-sources-hd{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.7px;text-transform:uppercase;margin:16px 0 8px}
+.source-link{display:flex;align-items:center;justify-content:space-between;background:var(--s0);border:1px solid var(--bd);border-radius:10px;padding:11px 13px;margin-bottom:7px;text-decoration:none}
+.source-link-name{font-size:13.5px;font-weight:700;color:var(--text)}
+.source-link-url{font-size:11px;color:var(--muted)}
+/* ── LOYALTY ── */
+.loy-notice{background:var(--goldd);border:1px solid rgba(251,191,36,.25);border-radius:10px;padding:9px 13px;font-size:12.5px;line-height:1.5;color:#FCD34D;margin-bottom:13px}
+.lcard{background:var(--s0);border:1px solid var(--bd);border-radius:var(--r);margin-bottom:9px;overflow:hidden}
+.lcard-art{height:80px;position:relative;overflow:hidden;cursor:pointer}
+.lcard-art-inner{position:absolute;inset:0;padding:12px 15px;display:flex;justify-content:space-between;align-items:flex-start}
+.lcard-name{font-size:13px;font-weight:800;color:rgba(255,255,255,.9);text-shadow:0 1px 4px rgba(0,0,0,.5);letter-spacing:-.2px}
+.lcard-short{font-size:10px;color:rgba(255,255,255,.55);margin-top:1px}
+.lcard-status-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:800;letter-spacing:.3px;text-shadow:none;align-self:flex-start}
+.lcard-body{padding:13px 15px;display:none}
+.lcard-body.op{display:block}
+.lcard-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.status-big{font-size:18px;font-weight:800;letter-spacing:-.3px}
+.status-note{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.3}
+/* account number */
+.acct-row{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:9px;padding:9px 12px;margin-bottom:10px}
+.acct-icon{font-size:14px;flex-shrink:0}
+.acct-lbl{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.acct-num{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;flex:1;color:var(--text);cursor:pointer;transition:color .15s;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-num:hover{color:var(--accent)}
+.acct-edit{background:none;border:1px solid var(--bd);border-radius:6px;padding:3px 7px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;flex-shrink:0;font-family:'Syne',sans-serif;transition:all .12s}
+.acct-edit:active{background:var(--accentd);color:var(--accent)}
+.acct-input-wrap{display:none;flex-direction:column;gap:6px;margin-bottom:10px}
+.acct-input-wrap.open{display:flex}
+.acct-field{background:var(--s1);border:1px solid var(--bd2);border-radius:8px;padding:8px 11px;font-size:13px;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--text);outline:none}
+.acct-field:focus{border-color:var(--accent)}
+.acct-save{background:var(--accentd);border:1px solid var(--accentd2);border-radius:8px;padding:7px 16px;font-size:12px;font-weight:700;color:var(--accent);cursor:pointer;font-family:'Syne',sans-serif;width:100%}
+/* status progress */
+.tier-block{margin-bottom:10px}
+.tier-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.tier-name{font-size:11.5px;font-weight:700;color:var(--text2)}
+.tier-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.tier-bar{height:3.5px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-bottom:4px}
+.tier-fill{height:100%;border-radius:2px}
+.tier-labels{display:flex;justify-content:space-between;font-size:10.5px;color:var(--muted)}
+.tier-cur{font-family:'JetBrains Mono',monospace;color:var(--text2)}
+.tier-target{font-family:'JetBrains Mono',monospace}
+/* breakdown grid */
+.lbd{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.lbd-cell{background:rgba(255,255,255,.025);border-radius:8px;padding:8px 10px}
+.lbd-lbl{font-size:9.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+.lbd-val{font-family:'JetBrains Mono',monospace;font-size:13.5px;font-weight:700}
+.lbd-val.g{color:var(--green)}.lbd-val.b{color:var(--accent)}.lbd-val.o{color:var(--gold)}.lbd-val.p{color:var(--purple)}
+.lperks{font-size:12px;color:var(--text2);line-height:1.7}
+.lperk-row{display:flex;gap:6px;align-items:baseline}
+.hot-offer-bar{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);border-radius:8px;padding:8px 11px;font-size:12px;color:var(--gold);line-height:1.5;margin-top:6px}
+/* ── CHAT ── */
+.chiprow{display:flex;gap:7px;overflow-x:auto;padding-bottom:4px;margin-bottom:11px}
+.chiprow::-webkit-scrollbar{display:none}
+.chip{background:var(--s0);border:1px solid var(--bd);border-radius:16px;padding:7px 13px;font-size:12px;font-weight:600;font-family:'Syne',sans-serif;white-space:nowrap;cursor:pointer;color:var(--text2);transition:all .14s;flex-shrink:0}
+.chip:active{background:var(--accentd);border-color:var(--accentd2);color:var(--accent);transform:scale(.95)}
+.chatlist{display:flex;flex-direction:column;gap:10px;padding-bottom:10px}
+.mbot{align-self:flex-start;max-width:92%}.muser{align-self:flex-end;max-width:82%}
+.mbub{padding:10px 14px;border-radius:18px;font-size:13.5px;line-height:1.6}
+.mbot .mbub{background:var(--s1);border:1px solid var(--bd);border-bottom-left-radius:4px}
+.muser .mbub{background:linear-gradient(135deg,#1360A0,#38BDF8);color:#fff;border-bottom-right-radius:4px}
+.mtime{font-size:10px;color:var(--muted);padding:2px 6px;font-family:'JetBrains Mono',monospace}
+.muser .mtime{text-align:right}
+.typing span{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--muted);margin:0 2px;animation:tdot 1s ease-in-out infinite}
+.typing span:nth-child(2){animation-delay:.14s}.typing span:nth-child(3){animation-delay:.28s}
+@keyframes tdot{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-4px);opacity:1}}
+/* (chat now floating — see .chat-fab above) */
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-row">
+    <div>
+      <div class="wordmark">CARD<em>IQ</em></div>
+      <div class="hdr-sub">Romil · Accor ALL @ ₹2.1/pt</div>
+    </div>
+  </div>
+</div>
+
+<div class="screens">
+  <div class="screen active" id="screen-spend"></div>
+  <div class="screen" id="screen-miles"></div>
+  <div class="screen" id="screen-cards"></div>
+  <div class="screen" id="screen-optimize"></div>
+  <div class="screen" id="screen-news"></div>
+  <div class="screen" id="screen-loyalty"></div>
+</div>
+
+<!-- Floating chat FAB -->
+<button class="chat-fab" onclick="toggleChat()" aria-label="Open assistant">
+  <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+</button>
+<div class="chat-backdrop" id="chat-backdrop" onclick="toggleChat()"></div>
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-panel-hd">
+    <div class="chat-panel-title">🤖 Card IQ Assistant</div>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-msgs" id="cl"></div>
+  <div class="chat-input-row">
+    <textarea class="chatinput" id="ci" placeholder="Routing, MCCs, caps, chains…" rows="1"></textarea>
+    <button class="sendbtn" onclick="send()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="ntab on" onclick="go('spend',this)"><span class="ntab-icon">⚡</span><span class="ntab-lbl">Spend</span></button>
+  <button class="ntab"    onclick="go('miles',this)"><span class="ntab-icon">🎯</span><span class="ntab-lbl">Miles</span></button>
+  <button class="ntab"    onclick="go('news',this)"><span class="ntab-icon">📰</span><span class="ntab-lbl">News</span></button>
+  <button class="ntab"    onclick="go('loyalty',this)"><span class="ntab-icon">🏅</span><span class="ntab-lbl">Loyalty</span></button>
+  <button class="ntab"    onclick="go('cards',this)"><span class="ntab-icon">💳</span><span class="ntab-lbl">Cards</span></button>
+  <button class="ntab"    onclick="go('optimize',this)"><span class="ntab-icon">📊</span><span class="ntab-lbl">Strategy</span></button>
+</nav>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// MILESTONE DEFINITIONS
+// ══════════════════════════════════════════════════════════
+const MS_DEFS = [
+  {
+    id:'dcb_q',
+    card:'DCB Metal', emoji:'⚫', grad:'linear-gradient(135deg,#111827,#374151)',
+    name:'Quarterly Milestone',
+    period:'Apr – Jun 2026',
+    deadline:'2026-06-30',
+    type:'spend',
+    threshold:400000,       // ₹4L
+    rewardLabel:'10,000 Reward Points',
+    rewardValue:10500,       // 10k RP → Accor 2:1 = 5k × ₹2.1
+    rewardNote:'10k RP → Accor ALL 2:1 = 5,000 pts × ₹2.1',
+    baseRate:3.5,            // % effective on INR (3.33 RP × ₹1.05 CPP)
+    defaultSpend:260000,     // ₹2.6L pre-loaded from your current cycle
+    color:'#A78BFA',
+    urgent:true,
+  },
+  {
+    id:'dcb_yr',
+    card:'DCB Metal', emoji:'⚫', grad:'linear-gradient(135deg,#111827,#374151)',
+    name:'Annual Fee Waiver',
+    period:'FY 2025-26',
+    deadline:'2026-03-31',
+    type:'spend',
+    threshold:800000,        // ₹8L
+    rewardLabel:'Annual Fee Waiver',
+    rewardValue:10000,       // approx DCB Metal annual fee
+    rewardNote:'Waives ~₹10,000 annual fee',
+    baseRate:3.5,
+    defaultSpend:260000,
+    color:'#6D28D9',
+  },
+  {
+    id:'amex_pt1',
+    card:'Amex Plat Travel', emoji:'🌟', grad:'linear-gradient(135deg,#78350F,#B45309)',
+    name:'Milestone 1',
+    period:'CY 2026',
+    deadline:'2026-12-31',
+    type:'spend',
+    threshold:190000,
+    rewardLabel:'Travel Voucher (est. ₹6,000)',
+    rewardValue:6000,        // estimate — verify with Amex app
+    rewardNote:'Auto-credited travel voucher (~₹6k est.)',
+    baseRate:1.5,
+    defaultSpend:0,
+    color:'#F59E0B',
+    approx:true,
+  },
+  {
+    id:'amex_pt2',
+    card:'Amex Plat Travel', emoji:'🌟', grad:'linear-gradient(135deg,#78350F,#B45309)',
+    name:'Milestone 2',
+    period:'CY 2026',
+    deadline:'2026-12-31',
+    type:'spend',
+    threshold:400000,
+    rewardLabel:'Travel Voucher (est. ₹12,000)',
+    rewardValue:12000,
+    rewardNote:'Auto-credited travel voucher (~₹12k est.)',
+    baseRate:1.5,
+    defaultSpend:0,
+    color:'#D97706',
+    approx:true,
+    prevId:'amex_pt1',
+  },
+  {
+    id:'amex_pt3',
+    card:'Amex Plat Travel', emoji:'🌟', grad:'linear-gradient(135deg,#78350F,#B45309)',
+    name:'Milestone 3 — Taj Voucher',
+    period:'CY 2026',
+    deadline:'2026-12-31',
+    type:'spend',
+    threshold:700000,
+    rewardLabel:'Taj Hotels Voucher (~₹15,000)',
+    rewardValue:15000,
+    rewardNote:'Taj hotel voucher ~₹15k (auto-credited)',
+    baseRate:1.5,
+    defaultSpend:0,
+    color:'#EF4444',
+    approx:true,
+    prevId:'amex_pt2',
+  },
+  {
+    id:'mrcc_mo',
+    card:'Amex MRCC', emoji:'🎁', grad:'linear-gradient(135deg,#1E3A8A,#2563EB)',
+    name:'Monthly Bonus (4 txns)',
+    period:'June 2026',
+    deadline:'2026-06-30',
+    type:'transaction',
+    threshold:4,             // 4 transactions ≥ ₹1500
+    txnMin:1500,
+    rewardLabel:'1,000 Bonus MR',
+    rewardValue:1500,        // 1000 MR × ₹1.5 CPP
+    rewardNote:'1,000 bonus MR × ₹1.5 CPP = ₹1,500 value',
+    baseRate:3,              // base MR earn on non-portal
+    defaultSpend:0,          // txns done this month (0-4)
+    color:'#60A5FA',
+  },
+];
+
+// Live milestone state (user-editable, in-memory)
+const MS = {};
+MS_DEFS.forEach(m => { MS[m.id] = m.type === 'transaction' ? (m.defaultSpend || 0) : (m.defaultSpend || 0); });
+
+// Milestone math
+function msRemaining(def) {
+  const cur = MS[def.id];
+  return Math.max(0, def.threshold - cur);
+}
+function msBoost(def) {
+  const rem = msRemaining(def);
+  if (rem <= 0 || def.type === 'transaction') return 0;
+  return (def.rewardValue / rem) * 100;
+}
+function msEffRate(def) {
+  if (def.type === 'transaction') {
+    const done = MS[def.id];
+    if (done >= 4) return { rate: def.baseRate, boost: 0, done: true };
+    const rem = 4 - done;
+    const boostPerTxn = (def.rewardValue / (rem * def.txnMin)) * 100;
+    return { rate: def.baseRate + boostPerTxn, boost: boostPerTxn, done: false };
+  }
+  const boost = msBoost(def);
+  const done = msRemaining(def) <= 0;
+  return { rate: done ? def.baseRate : def.baseRate + boost, boost, done };
+}
+function pct(n) { return n > 0 ? n.toFixed(1) + '%' : '—'; }
+function lakhs(n) {
+  if (n >= 100000) return '₹' + (n/100000).toFixed(2) + 'L';
+  if (n >= 1000) return '₹' + (n/1000).toFixed(0) + 'k';
+  return '₹' + n;
+}
+function daysLeft(deadline) {
+  const d = Math.ceil((new Date(deadline) - new Date()) / 86400000);
+  return d;
+}
+
+// ══════════════════════════════════════════════════════════
+// CATEGORY DATA
+// ══════════════════════════════════════════════════════════
+const CATS = [
+  { id:'ph',  e:'🏨', n:'Portal Hotels',       s:'via Hopper',         badge:'75.6%', bcls:'cbg', isForex:true,
+    best:'HSBC Premier', bsub:'Hopper → Accor ALL 1:1', rv:75.6, rc:'ng',
+    why:'36 pts/₹100 via Premier Hopper → Accor ALL 1:1 → ₹2.1/pt = ₹75.6 per ₹100. Highest return in your entire wallet.',
+    cav:'⚠️ 18k pts/month shared cap with flights. Prioritise hotel over flight bookings for cap allocation.',
+    alts:[{l:'TravelOne Hopper',r:'50.4%',n:'Fallback if Premier cap hit'},{l:'DCB SmartBuy',r:'33.3%',n:'10X hotels · 10k RP/mo cap'}],
+    dynCards:[
+      {id:'premier_h',card:'HSBC Premier Hopper',rate:75.6,note:'36 pts/₹100 → Accor ALL 1:1',cls:'top'},
+      {id:'travelone_h',card:'TravelOne Hopper ⚡',rate:50.4,note:'24 pts/₹100 → Accor ALL 1:1 (18k cap)',cls:'hi'},
+      {id:'dcb_sb_h',card:'DCB SmartBuy Hotels',rate:33.3,note:'10X total · 10k RP/mo cap · Accor 2:1',cls:'hi'},
+    ]
+  },
+  { id:'pf',  e:'✈️', n:'Portal Flights',      s:'via Hopper',         badge:'37.8%', bcls:'cbg', isForex:true,
+    best:'HSBC Premier', bsub:'Hopper → Accor ALL 1:1', rv:37.8, rc:'ng',
+    why:'18 pts/₹100 via Premier Hopper → Accor ALL 1:1 → ₹37.8 per ₹100. Beats TravelOne Hopper flights (33.6%).',
+    cav:'Hotels earn 36 pts vs flights 18 pts on same cap — prioritise hotel cap allocation.',
+    alts:[{l:'TravelOne Hopper',r:'33.6%',n:'Fallback (⚡ cashback to June)'},{l:'DCB SmartBuy',r:'~10%',n:'5X SmartBuy flights'}],
+    dynCards:[
+      {id:'premier_f',card:'HSBC Premier Hopper',rate:37.8,note:'18 pts/₹100 → Accor ALL 1:1',cls:'hi'},
+      {id:'travelone_f',card:'TravelOne Hopper ⚡',rate:33.6,note:'16 pts/₹100 (cashback active)',cls:'hi'},
+      {id:'dcb_sb_f',card:'DCB SmartBuy Flights',rate:10.5,note:'5X total on SmartBuy · Accor 2:1',cls:'md'},
+    ]
+  },
+  { id:'af',  e:'🛫', n:'Direct Airline MCC',  s:'airline websites',   badge:'17.7%', bcls:'cbw', isForex:true,
+    best:'Axis Atlas', bsub:'5 EM/₹100 → KrisFlyer 1:2', rv:17.7, rc:'nb',
+    why:'5 EDGE Miles/₹100 on airline MCC → KrisFlyer 1:2 = 10 miles → ₹1.6 CPP = ~17.7% net after forex.',
+    cav:'Uses Group A cap (30k/yr). Always prefer Premier Hopper portal when booking is possible.',
+    alts:[{l:'HSBC Premier Hopper',r:'37.8%',n:'Book via Hopper portal instead if available'}],
+    dynCards:[
+      {id:'atlas_a',card:'Axis Atlas',rate:17.7,note:'5 EM/₹100 → KrisFlyer 1:2 (Group A cap)',cls:'md'},
+      {id:'premier_fx',card:'HSBC Premier base',rate:5.1,note:'3 pts/₹100 + 0.99% markup fallback',cls:'lo'},
+    ]
+  },
+  { id:'gf',  e:'🌍', n:'Generic Forex',       s:'non-travel MCC',     badge:'5.1%', bcls:'cbw', isForex:true,
+    best:'HSBC Premier', bsub:'0.99% markup · 3 pts base', rv:5.1, rc:'nb',
+    why:'3 pts/₹100 → Accor ALL → ₹6.3/₹100. Minus 1.167% forex = ~5.1% net. Premier has lowest markup in stack.',
+    cav:'TravelOne cashback expires June 2026 → Premier default from July. Utilities/tax/e-wallets capped at ₹1L/mo.',
+    alts:[{l:'TravelOne (⚡ till June)',r:'~7.8%',n:'Still better while cashback active'},{l:'Amex Plat Charge',r:'~7.12%',n:'Best for MCC 7991'}],
+    dynCards:[
+      {id:'travelone_gf',card:'TravelOne ⚡ (till June)',rate:7.8,note:'3.5% cashback active · expires June 2026',cls:'md'},
+      {id:'amex_gf',card:'Amex Plat Charge',rate:7.12,note:'3X MR intl · best for MCC 7991',cls:'md'},
+      {id:'premier_gf',card:'HSBC Premier',rate:5.1,note:'3 pts + 0.99% markup (default from July)',cls:'lo'},
+    ]
+  },
+  { id:'gg',  e:'🎪', n:'GetYourGuide',        s:'MCC 7991 – entmt.',  badge:'7.12%', bcls:'cbw', isForex:true,
+    best:'Amex Plat Charge', bsub:'3X MR on international', rv:7.12, rc:'na',
+    why:'GetYourGuide = MCC 7991 (Entertainment). Premier/TravelOne Hopper do NOT apply. Amex Plat 3X MR/₹40 = ~7.12% net.',
+    cav:'This MCC is critical — always verify before booking. Klook=4722 earns TravelOne accelerated; GetYourGuide=7991 does not.',
+    alts:[{l:'HSBC Premier base',r:'~5.1%',n:'Only base 3 pts — Hopper not triggered'}],
+    dynCards:[
+      {id:'amex_gg',card:'Amex Plat Charge',rate:7.12,note:'3X MR/₹40 on international (MCC 7991)',cls:'md'},
+      {id:'premier_gg',card:'HSBC Premier base',rate:5.1,note:'Base 3 pts only — no Hopper on MCC 7991',cls:'lo'},
+    ]
+  },
+  { id:'kl',  e:'🎫', n:'Klook / Tours',       s:'MCC 4722',           badge:'7.67%', bcls:'cbw', isForex:true,
+    best:'TravelOne', bsub:'MCC 4722 accelerated', rv:7.67, rc:'na',
+    why:'Klook = MCC 4722 (Travel Agency) → TravelOne accelerated rate applies → ~7.67% net. Beats Amex Plat (~7.12%).',
+    cav:'⚡ TravelOne cashback expires June 2026. Post-June: Amex Plat Charge (~7.12%) beats Premier base (~5.1%).',
+    alts:[{l:'Amex Plat Charge',r:'~7.12%',n:'Best fallback from July 2026'}],
+    dynCards:[
+      {id:'travelone_kl',card:'TravelOne ⚡ (till June)',rate:7.67,note:'MCC 4722 accelerated · cashback active',cls:'md'},
+      {id:'amex_kl',card:'Amex Plat Charge',rate:7.12,note:'Best option from July 2026',cls:'md'},
+      {id:'premier_kl',card:'HSBC Premier base',rate:5.1,note:'Base rate only on MCC 4722',cls:'lo'},
+    ]
+  },
+  { id:'is',  e:'🛒', n:'INR Shopping',        s:'Amazon, SmartBuy',   badge:'', bcls:'', isForex:false,
+    best:'DCB SmartBuy', bsub:'3.33 RP/₹100 + milestone boost', rv:0, rc:'ng',
+    why:'Best all-round INR earner. SmartBuy portal gives higher multiples. Quarterly ₹4L → 10k RP milestone currently boosting effective rate.',
+    cav:'Enter ₹ amount below for milestone-adjusted comparison.',
+    alts:[{l:'MRCC Multiplier',r:'~15%',n:'If merchant is on Reward Multiplier portal (25k cap/mo)'},{l:'MRCC Monthly target',r:'+25%',n:'On 4 qualifying ₹1500+ txns for 1000 MR bonus'}],
+    dynCards:'inr', // special flag
+  },
+  { id:'dn',  e:'🍽️', n:'Dining',             s:'restaurants, cafes', badge:'', bcls:'', isForex:false,
+    best:'Amex MRCC', bsub:'10 MR/₹100 Reward Multiplier', rv:0, rc:'nb',
+    why:'10 MR/₹100 via Reward Multiplier portal = ~₹1.5/₹100 at ₹1.5 CPP. DCB Metal 3.33 RP/₹100 as fallback.',
+    cav:'Check Reward Multiplier portal. 25k bonus MR/mo cap shared with Plat Charge. No tab-switching.',
+    alts:[{l:'DCB Metal',r:'3.5%',n:'Best fallback — see milestone boost below'}],
+    dynCards:'inr',
+  },
+  { id:'atm', e:'🏧', n:'Overseas ATM',        s:'cash abroad',        badge:'0% FX', bcls:'cbg', isForex:true,
+    best:'IDFC First WOW', bsub:'0% markup · ₹199+GST flat', rv:0, rc:'ng',
+    why:'Only card for overseas ATM. 0% forex markup, 45-day IFP, ₹199+GST flat fee, treated as purchase.',
+    cav:'Always carry IDFC WOW travelling. Never use any other card for overseas ATM.',
+    alts:[],
+    dynCards:[{id:'idfc',card:'IDFC First WOW',rate:0,note:'0% markup · ₹199+GST flat · 45-day IFP',cls:'hi',special:'Best — only option'}],
+  },
+];
+
+// ══════════════════════════════════════════════════════════
+// CARDS DATA
+// ══════════════════════════════════════════════════════════
+const CARDS = [
+  { id:'pr', name:'HSBC Premier', iss:'HSBC India · Mastercard', isPrimary:true, grad:'linear-gradient(135deg,#0C4A6E,#0284C7)',
+    tags:[['PRIMARY · LIVE','tl'],['0.99% Forex','tg'],['36X Hopper Hotels','tb'],['18X Hopper Flights','tb']],
+    earn:[{c:'Hopper Hotels (replaces base)',r:'36 pts',u:'/₹100'},{c:'Hopper Flights (replaces base)',r:'18 pts',u:'/₹100'},{c:'Forex Base',r:'3 pts',u:'/₹100'}],
+    info:`<span class="ig">● NOW LIVE — Primary travel card</span><br><br><span class="ia">Forex markup: 0.99%</span> (~1.167% with GST) — lowest in stack<br><br>Transfer partners 1:1: Accor ALL · Air India · Qatar Privilege Club<br><br>Hopper cap: 18,000 pts/month shared (hotels + flights)<br><br><span class="io">⚠️</span> Utilities/tax/insurance/e-wallets → ₹1L/month cumulative cap<br><br>Confirm with RM if TravelOne pts merge into Premier pool before downgrade.`},
+  { id:'aa', name:'Axis Atlas', iss:'Axis Bank · Visa', grad:'linear-gradient(135deg,#1E3A8A,#6D28D9)',
+    tags:[['5X Travel','tb'],['2X Online','tb'],['Group A 30k/yr','to'],['4.13% Forex','tr']],
+    earn:[{c:'Airlines & Hotels (direct MCC)',r:'5 EM',u:'/₹100'},{c:'Online Spends',r:'2 EM',u:'/₹100'},{c:'All Other',r:'1 EM',u:'/₹100'}],
+    info:`Transfer partners (post-April 2, 2026):<br>• SQ KrisFlyer 1:2 <span style="background:var(--goldd);color:var(--gold);font-size:10px;padding:1px 5px;border-radius:3px">Group A</span><br>• Qantas 1:2 <span style="background:var(--goldd);color:var(--gold);font-size:10px;padding:1px 5px;border-radius:3px">Group A</span><br>• Air India 1:1 · ITC→Marriott (Group B) · JAL (last resort)<br><br><span class="iw">REMOVED:</span> Accor ALL, Marriott direct, Qatar, BA (devalued 2:1)<br><br><strong>Group A deploy deadline: Dec 31, 2026</strong>`},
+  { id:'dc', name:'Diners Club Black Metal', iss:'HDFC Bank · Diners', grad:'linear-gradient(135deg,#111827,#374151)',
+    tags:[['10X SmartBuy Hotels','tb'],['Global Valueback','tg'],['₹4L Quarterly','to']],
+    earn:[{c:'All Spends (base)',r:'3.33 RP',u:'/₹100 (5 RP/₹150)'},{c:'SmartBuy Hotels',r:'10X total',u:'⚠️ 10k RP/mo cap'},{c:'SmartBuy Flights',r:'5X total',u:''}],
+    info:`Hotel bonus cap: 10,000 RP/mo (~₹33,333 hotel spend)<br><br>Global Valueback: 1% forex cashback → 1.36% net forex cost<br><br>Milestones: Quarterly ₹4L → 10k RP | Annual ₹8L → fee waiver<br><br><span class="ig">Finnair chain:</span> DCB → Finnair 1:1 → BA Avios 1:1 → Qatar 1:1 (all instant, same-day)`},
+  { id:'to', name:'HSBC TravelOne', iss:'HSBC India · Mastercard', grad:'linear-gradient(135deg,#881337,#C2410C)',
+    tags:[['Hopper 24X Hotels','tb'],['1:1 Accor ALL','tg'],['⚡ Cashback June','to'],['Review Aug 2026','tr']],
+    earn:[{c:'Hopper Hotels (replaces base)',r:'24 pts',u:'/₹100'},{c:'Hopper Flights (replaces base)',r:'16 pts',u:'/₹100'},{c:'Base',r:'4 pts',u:'/₹100'}],
+    info:`Hopper cap: 18,000 pts/month shared<br><br><span class="io">⚡ 3.5% forex cashback expires June 2026</span><br><br>MCC: Klook=4722 ✅ · GetYourGuide=7991 ❌ (base only)<br><br><span class="iw">⚠️ Renewal: August 2026.</span> With Premier live, evaluate closure. Confirm TravelOne pts merge with RM.`},
+  { id:'ap', name:'Amex Platinum Charge', iss:'American Express', grad:'linear-gradient(135deg,#1F2937,#4B5563)',
+    tags:[['3X MR Intl','tb'],['Xcelerator 20X','to'],['FHR Hotels','to']],
+    earn:[{c:'International base',r:'3X MR',u:'/₹40'},{c:'Xcelerator – Darveys',r:'20X MR',u:''},{c:'Xcelerator – Tata CLiQ Luxury',r:'10X MR',u:''},{c:'Reward Multiplier portal',r:'up to 5X',u:'⚠️ 25k cap/mo'}],
+    info:`Best for: MCC 7991 (GetYourGuide) ~7.12% net<br><br>Fine Hotels & Resorts: Free breakfast, late checkout, upgrades<br><br>Transfer: Marriott · KrisFlyer · BA Avios · AsiaMiles · Air India<br><br><span class="iw">Cash withdrawal suspended in India.</span> 4.13% forex markup.`},
+  { id:'pt', name:'Amex Platinum Travel', iss:'American Express', grad:'linear-gradient(135deg,#78350F,#B45309)',
+    tags:[['₹1.9L Milestone','tb'],['₹7L Taj Voucher','to'],['Auto-credited','tg']],
+    earn:[{c:'All Spends',r:'MR Points',u:'standard earn'}],
+    info:`Milestones (post-March 9, 2026): ₹1.9L · ₹4L · ₹7L (Taj voucher) — all auto-credited<br><br>See 🎯 Miles tab for live milestone tracking and effective return calculation.`},
+  { id:'mr', name:'Amex MRCC', iss:'American Express', grad:'linear-gradient(135deg,#1E3A8A,#2563EB)',
+    tags:[['10 MR/₹100 portal','tp'],['Monthly Bonus','tg']],
+    earn:[{c:'Reward Multiplier Portal',r:'10 MR',u:'/₹100 (25k cap/mo)'},{c:'Base',r:'1 MR',u:'/₹50'}],
+    info:`Best use: All Reward Multiplier portal spend → 10 MR/₹100 = ~₹1.5/₹100 at ₹1.5 CPP<br><br>Rules: No tab-switching · Full payment via Amex · 25k bonus MR/mo cap shared with Plat Charge<br><br>Monthly bonus: 4× transactions ≥ ₹1,500 → 1,000 bonus MR (= ₹1,500). See 🎯 Miles tab.`},
+];
+
+// ══════════════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════════════
+function go(name,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('screen-'+name).classList.add('active');
+  btn.classList.add('on');
+}
+
+// ── FLOATING CHAT ──
+let chatOpen=false;
+function toggleChat(){
+  chatOpen=!chatOpen;
+  document.getElementById('chat-panel').classList.toggle('on',chatOpen);
+  document.getElementById('chat-backdrop').classList.toggle('on',chatOpen);
+  if(chatOpen){ buildChat(); setTimeout(()=>{ document.getElementById('ci').focus(); document.getElementById('cl').scrollTop=99999; },320); }
+}
+
+// ══════════════════════════════════════════════════════════
+// SPEND TAB
+// ══════════════════════════════════════════════════════════
+function buildSpend(){
+  const el=document.getElementById('screen-spend');
+  let h=`<div class="stitle">What are you spending on?</div><div class="cat-scroll" id="catg">`;
+  CATS.forEach(c=>{
+    const badge=c.badge?`<span class="cbadge ${c.bcls}">${c.badge}</span>`:'';
+    h+=`<div class="catbtn" id="cb-${c.id}" onclick="selcat('${c.id}')"><span class="cat-e">${c.e}</span><span class="cat-n">${c.n}</span>${badge}</div>`;
+  });
+  h+=`</div><div id="catr"></div>`;
+  el.innerHTML=h;
+}
+
+let selCatId = null;
+function selcat(id){
+  document.querySelectorAll('.catbtn').forEach(b=>b.classList.remove('sel'));
+  document.getElementById('cb-'+id).classList.add('sel');
+  selCatId = id;
+  renderSpendResult(id, null);
+}
+
+function renderSpendResult(id, amt){
+  const c = CATS.find(x=>x.id===id);
+  const ahtml = c.alts.map(a=>`<div class="altrow"><div><div class="altname">${a.l}</div><div class="altnote">${a.n}</div></div><div class="altrate">${a.r}</div></div>`).join('');
+  const rnum = c.rv>0?`<div class="rretrow"><div class="rnum ${c.rc}" id="rn-${id}">0.0%</div><div class="rlbl">gross/net<br>return</div></div>`:'';
+
+  document.getElementById('catr').innerHTML=`<div class="rslide">
+    <div class="rhero"><div class="rhero-in">
+      <div class="rtag">Best card</div>
+      <div class="rname">${c.best}</div>
+      <div class="rsub">${c.bsub}</div>
+      ${rnum}
+      <div class="rreason">${c.why}</div>
+      ${c.cav?`<div class="rcaveat">⚡<span>${c.cav}</span></div>`:''}
+    </div></div>
+    ${ahtml?`<div class="alts-hd">Alternatives</div>${ahtml}`:''}
+    <div class="amt-row" style="margin-top:12px">
+      <span class="amt-label">₹ Amount</span>
+      <input class="amt-input" type="number" id="amtinp" placeholder="Enter spend amount…" value="${amt||''}" oninput="onAmt('${id}',this.value)">
+    </div>
+    <div id="dynrec"></div>
+  </div>`;
+
+  if(c.rv>0) animn(document.getElementById('rn-'+id), c.rv);
+  if(amt) renderDyn(id, parseFloat(amt));
+  document.getElementById('catr').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function onAmt(id, val){
+  const amt = parseFloat(val);
+  if(!val || isNaN(amt) || amt <= 0){
+    document.getElementById('dynrec').innerHTML='';
+    return;
+  }
+  renderDyn(id, amt);
+}
+
+function renderDyn(catId, amt){
+  const cat = CATS.find(c=>c.id===catId);
+  let rows = [];
+
+  if(cat.dynCards === 'inr'){
+    // Build INR options with milestone boost
+    const dcbDef = MS_DEFS.find(m=>m.id==='dcb_q');
+    const dcbEff = msEffRate(dcbDef);
+    const mrccDef = MS_DEFS.find(m=>m.id==='mrcc_mo');
+    const mrccEff = msEffRate(mrccDef);
+
+    rows = [
+      { card:'MRCC Reward Multiplier', rate:15, note:'10 MR/₹100 via portal (25k cap/mo)', cls:'hi', isPortal:true },
+      { card:'DCB Metal' + (dcbEff.done?'':' + Milestone'), rate:dcbEff.rate,
+        note:`3.5% base${dcbEff.done?', milestone complete':`, +${dcbEff.boost.toFixed(1)}% milestone boost`}`,
+        boost: dcbEff.done ? 0 : dcbEff.boost,
+        boostNote: dcbEff.done ? '✅ Quarterly milestone complete' : `Quarterly: ${lakhs(msRemaining(dcbDef))} remaining → ₹${(dcbDef.rewardValue/1000).toFixed(0)}k bonus`,
+        cls: dcbEff.rate > 10 ? 'hi' : dcbEff.rate > 6 ? 'md' : 'lo'
+      },
+      { card:'Axis Atlas (online MCCs)', rate:3.2, note:'2 EM/₹100 → KrisFlyer at ₹0.8 CPP est.', cls:'lo' },
+      { card:'MRCC Monthly Bonus', rate:mrccEff.rate, note:`${MS[mrccDef.id]}/4 txns done · ${mrccEff.done?'Bonus earned!':'₹1,500 bonus on completing 4 txns'}`, boost:mrccEff.done?0:mrccEff.boost, boostNote:mrccEff.done?'✅ Monthly bonus achieved':`+${mrccEff.boost.toFixed(0)}% boost per ₹1,500+ qualifying transaction`, cls:mrccEff.done?'lo':mrccEff.rate>20?'top':'md' },
+    ];
+  } else if(Array.isArray(cat.dynCards)){
+    rows = cat.dynCards.map(r=>({...r, rate:r.rate}));
+  } else {
+    document.getElementById('dynrec').innerHTML='';
+    return;
+  }
+
+  rows.sort((a,b)=>b.rate-a.rate);
+
+  let rhtml = `<div class="dynrec"><div class="dynrec-hd">Effective return on ${lakhs(amt)}</div>`;
+  rows.forEach((r,i)=>{
+    const cls = i===0 ? 'top' : r.cls||'lo';
+    const pctStr = r.special || (r.rate>0 ? r.rate.toFixed(1)+'%' : '—');
+    rhtml += `<div class="rec-row${i===0?' winner':''}">
+      <div class="rec-rank">${i===1?'②':i===2?'③':i===3?'④':'①'}</div>
+      <div class="rec-info">
+        <div class="rec-card">${r.card}${(r.boost||0)>0?`<span class="ms-tag">milestone</span>`:''}</div>
+        <div class="rec-note">${r.note}</div>
+        ${(r.boost||0)>0&&r.boostNote?`<div class="rec-boost">⚡ ${r.boostNote}</div>`:''}
+      </div>
+      <div class="rec-rate"><div class="rec-pct ${cls}">${pctStr}</div></div>
+    </div>`;
+  });
+  rhtml += '</div>';
+  document.getElementById('dynrec').innerHTML = rhtml;
+}
+
+function animn(el,target){
+  const dur=680,t0=performance.now();
+  const run=t=>{const p=Math.min((t-t0)/dur,1),e=1-(1-p)**3;el.textContent=(target*e).toFixed(1)+'%';if(p<1)requestAnimationFrame(run)};
+  requestAnimationFrame(run);
+}
+
+// ══════════════════════════════════════════════════════════
+// MILES TAB
+// ══════════════════════════════════════════════════════════
+function buildMiles(){
+  const el=document.getElementById('screen-miles');
+  let h=`<div class="stitle">Milestones</div>`;
+  h+=`<div class="notice n-gold">⚡ DCB quarterly cycle ends June 30 — ${daysLeft('2026-06-30')} days left. Effective rate = ${(MS_DEFS[0].baseRate + msBoost(MS_DEFS[0])).toFixed(1)}% on remaining spend.</div>`;
+
+  MS_DEFS.forEach(def => {
+    h += renderMsCard(def);
+  });
+  el.innerHTML = h;
+}
+
+function renderMsCard(def){
+  const cur = MS[def.id];
+  const eff = msEffRate(def);
+  const done = eff.done;
+
+  if(def.type === 'transaction'){
+    // MRCC monthly — special txn UI
+    const pips = Array.from({length:4},(_,i)=>`<div class="txn-pip ${i<cur?'done':''}" onclick="txnPip('${def.id}',${i})">${i<cur?'✓':'${i+1}'}</div>`).join('');
+    const pctColor = eff.rate > 20 ? 'top' : eff.rate > 10 ? 'hi' : 'md';
+    return `<div class="ms-card${done?' done':''}" id="mc-${def.id}">
+      <div class="ms-header">
+        <div>
+          <div class="ms-card-name">${def.emoji} ${def.card}</div>
+          <div class="ms-name">${def.name}</div>
+          <div class="ms-period">${def.period}</div>
+        </div>
+        <div class="ms-eff-rate">
+          <div class="ms-eff-lbl">eff. return</div>
+          <div class="ms-eff-num ${done?'done-c':pctColor==='top'?'boosted':'base'}">${done?'Done':eff.rate.toFixed(0)+'%'}</div>
+        </div>
+      </div>
+      <div class="ms-bk-lbl" style="margin-bottom:7px">Tap to mark transactions ≥ ₹${def.txnMin.toLocaleString()}</div>
+      <div class="txn-pips" id="pips-${def.id}">${Array.from({length:4},(_,i)=>`<div class="txn-pip ${i<cur?'done':''}" onclick="txnPip('${def.id}',${i+1})">${i<cur?'✓':(i+1)}</div>`).join('')}</div>
+      <div class="ms-breakdown">
+        <div class="ms-bk"><div class="ms-bk-lbl">Done</div><div class="ms-bk-val b">${cur}/4 txns</div></div>
+        <div class="ms-bk"><div class="ms-bk-lbl">Bonus value</div><div class="ms-bk-val g">₹${(done?def.rewardValue:(cur/4)*def.rewardValue).toLocaleString()}</div></div>
+        <div class="ms-bk"><div class="ms-bk-lbl">Bonus per txn</div><div class="ms-bk-val o">+₹${(def.rewardValue/4).toLocaleString()}</div></div>
+        <div class="ms-bk"><div class="ms-bk-lbl">Boost (per ₹1.5k)</div><div class="ms-bk-val ${done?'r':'g'}">${done?'—':'+'+eff.boost.toFixed(0)+'%'}</div></div>
+      </div>
+      <div class="ms-deadline"><div class="ms-dl-dot" style="background:${daysLeft(def.deadline)<14?'var(--red)':'var(--gold)'}"></div><span>${daysLeft(def.deadline)} days left · ${def.period}</span>${done?`<span class="ms-done-badge">✓ Complete</span>`:''}</div>
+    </div>`;
+  }
+
+  // spend-based milestone
+  const rem = msRemaining(def);
+  const boost = msBoost(def);
+  const fillPct = Math.min(100, (cur/def.threshold)*100).toFixed(1);
+  const fillColor = fillPct > 75 ? 'var(--green)' : fillPct > 40 ? 'var(--gold)' : 'var(--accent)';
+  const effClass = eff.rate > 10 ? 'boosted' : eff.rate > 6 ? 'base' : 'done-c';
+
+  return `<div class="ms-card${done?' done':def.urgent?' urgent':''}" id="mc-${def.id}">
+    <div class="ms-header">
+      <div style="min-width:0">
+        <div class="ms-card-name">${def.emoji} ${def.card}</div>
+        <div class="ms-name">${def.name}</div>
+        <div class="ms-period">${def.period}${def.approx?' · est. values':''}</div>
+      </div>
+      <div class="ms-eff-rate" style="flex-shrink:0">
+        <div class="ms-eff-lbl">${done?'Done':'eff. rate'}</div>
+        <div class="ms-eff-num ${done?'done-c':effClass}">${done?'✅':eff.rate.toFixed(1)+'%'}</div>
+      </div>
+    </div>
+    <div class="ms-prog-wrap">
+      <div class="ms-prog-labels">
+        <span class="ms-prog-spent">${lakhs(cur)} spent</span>
+        <span class="ms-prog-thresh">target ${lakhs(def.threshold)}</span>
+      </div>
+      <div class="ms-bar"><div class="ms-fill" style="width:${fillPct}%;background:${fillColor}"></div></div>
+    </div>
+    <div class="ms-input-row">
+      <span class="ms-input-lbl">Spent so far</span>
+      <input class="ms-input" type="number" id="msi-${def.id}" value="${cur}" placeholder="₹ amount" oninput="updateMs('${def.id}',this.value)" onchange="updateMs('${def.id}',this.value)">
+    </div>
+    <div class="ms-breakdown" id="msbd-${def.id}">${msBdHtml(def)}</div>
+    <div class="ms-deadline">
+      <div class="ms-dl-dot" style="background:${daysLeft(def.deadline)<14?'var(--red)':done?'var(--green)':'var(--gold)'}"></div>
+      <span>${done?'Milestone complete!':rem>0?`${lakhs(rem)} remaining`:''} · ${daysLeft(def.deadline)} days left</span>
+      ${done?`<span class="ms-done-badge">✓ Hit</span>`:''}
+    </div>
+  </div>`;
+}
+
+function msBdHtml(def){
+  const cur = MS[def.id];
+  const rem = msRemaining(def);
+  const boost = msBoost(def);
+  const eff = msEffRate(def);
+  return `
+    <div class="ms-bk"><div class="ms-bk-lbl">Remaining</div><div class="ms-bk-val ${rem>0?'b':'g'}">${rem>0?lakhs(rem):'Done ✅'}</div></div>
+    <div class="ms-bk"><div class="ms-bk-lbl">Reward value</div><div class="ms-bk-val g">₹${def.rewardValue.toLocaleString()}</div></div>
+    <div class="ms-bk"><div class="ms-bk-lbl">Milestone boost</div><div class="ms-bk-val ${boost>5?'g':boost>2?'o':'r'}">${rem>0?'+'+boost.toFixed(1)+'%':'—'}</div></div>
+    <div class="ms-bk"><div class="ms-bk-lbl">Effective rate</div><div class="ms-bk-val ${eff.rate>10?'g':eff.rate>5?'o':'b'}">${eff.rate.toFixed(1)}%</div></div>
+  `;
+}
+
+function updateMs(id, val){
+  const n = Math.max(0, parseFloat(val)||0);
+  MS[id] = n;
+  const def = MS_DEFS.find(m=>m.id===id);
+  // re-render breakdown
+  const bd = document.getElementById('msbd-'+id);
+  if(bd) bd.innerHTML = msBdHtml(def);
+  // update progress bar
+  const mc = document.getElementById('mc-'+id);
+  if(mc){
+    const fill = mc.querySelector('.ms-fill');
+    if(fill){
+      const pct = Math.min(100,(n/def.threshold)*100).toFixed(1);
+      const col = pct>75?'var(--green)':pct>40?'var(--gold)':'var(--accent)';
+      fill.style.width=pct+'%'; fill.style.background=col;
+    }
+    const progSpent = mc.querySelector('.ms-prog-spent');
+    if(progSpent) progSpent.textContent = lakhs(n) + ' spent';
+  }
+  // update header rate
+  const eff = msEffRate(def);
+  const effEl = mc && mc.querySelector('.ms-eff-num');
+  if(effEl){ effEl.textContent = eff.done?'✅':eff.rate.toFixed(1)+'%'; effEl.className='ms-eff-num '+(eff.done?'done-c':eff.rate>10?'boosted':'base'); }
+  // re-render dynrec if on spend tab
+  if(selCatId){
+    const inp = document.getElementById('amtinp');
+    if(inp && inp.value) renderDyn(selCatId, parseFloat(inp.value));
+  }
+  // update notice bar
+  const notice = document.querySelector('#screen-miles .notice');
+  if(notice){ const dcb=MS_DEFS[0]; notice.textContent=`⚡ DCB quarterly cycle ends June 30 — ${daysLeft('2026-06-30')} days left. Effective rate = ${(dcb.baseRate+msBoost(dcb)).toFixed(1)}% on remaining spend.`; }
+}
+
+function txnPip(id, count){
+  MS[id] = count > MS[id] ? count : count - 1; // toggle
+  if(MS[id]<0) MS[id]=0;
+  const def = MS_DEFS.find(m=>m.id===id);
+  const mc = document.getElementById('mc-'+id);
+  // re-render pips
+  const pipsEl = document.getElementById('pips-'+id);
+  if(pipsEl) pipsEl.innerHTML = Array.from({length:4},(_,i)=>`<div class="txn-pip ${i<MS[id]?'done':''}" onclick="txnPip('${id}',${i+1})">${i<MS[id]?'✓':(i+1)}</div>`).join('');
+  // re-render breakdown
+  const bd = document.getElementById('msbd-'+id);
+  if(bd) bd.innerHTML = msBdHtml(def);
+  // update header rate
+  const eff = msEffRate(def);
+  const effEl = mc && mc.querySelector('.ms-eff-num');
+  if(effEl){ effEl.textContent=eff.done?'Done':eff.rate.toFixed(0)+'%'; }
+}
+
+// ══════════════════════════════════════════════════════════
+// CARDS TAB
+// ══════════════════════════════════════════════════════════
+function buildCards(){
+  const el=document.getElementById('screen-cards');
+  let h=`<div class="stitle">Your Stack</div>`;
+  CARDS.forEach(card=>{
+    const tags=card.tags.map(([t,c])=>`<span class="tag ${c}">${t}</span>`).join('');
+    const earns=card.earn.map(e=>`<div class="erow"><span class="ecat">${e.c}</span><span class="erate">${e.r}</span><span class="eunit">${e.u}</span></div>`).join('');
+    const prim=card.isPrimary?`<div class="primary-badge">● Primary Travel Card</div>`:'';
+    h+=`<div class="gcard"><div class="ccard-row" onclick="togcard('${card.id}')">
+      <div class="ccard-art" style="background:${card.grad}"><div class="ccard-art-inner"><div class="ccard-chip"></div><div><div class="ccard-label">${card.name.toUpperCase()}</div><div class="ccard-iss">${card.iss.split('·')[0].trim()}</div></div></div></div>
+      <div class="ctext"><div class="cname">${card.name}</div><div class="ciss">${card.iss}</div></div>
+      <span class="cchev" id="cv-${card.id}">›</span>
+    </div>
+    <div class="cdet" id="cd-${card.id}">${prim}<div class="tags">${tags}</div><div class="earns">${earns}</div><div class="infobox">${card.info}</div></div>
+    </div>`;
+  });
+  h+=`<div style="font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.8px;text-transform:uppercase;margin:14px 0 8px">Supporting</div>
+  <div class="gcard"><div style="padding:13px 15px"><div style="font-size:14px;font-weight:700;margin-bottom:5px">🏧 IDFC First WOW</div><div style="font-size:12.5px;color:var(--text2);line-height:1.6"><span class="ig">Dedicated overseas ATM.</span> 0% forex · 45-day interest-free · ₹199+GST flat fee · Withdrawals as purchases.</div></div></div>`;
+  el.innerHTML=h;
+}
+function togcard(id){document.getElementById('cd-'+id).classList.toggle('op');document.getElementById('cv-'+id).classList.toggle('op')}
+
+// ══════════════════════════════════════════════════════════
+// OPTIMIZE TAB
+// ══════════════════════════════════════════════════════════
+const RETURNS=[
+  {s:'Premier Hopper Hotels',c:'HSBC Premier',v:'75.6%',cls:'top',isnew:true},
+  {s:'Premier Hopper Flights',c:'HSBC Premier',v:'37.8%',cls:'hi',isnew:true},
+  {s:'TravelOne Hopper Hotels',c:'TravelOne ⚡',v:'50.4%',cls:'hi',isnew:false},
+  {s:'TravelOne Hopper Flights',c:'TravelOne ⚡',v:'33.6%',cls:'hi',isnew:false},
+  {s:'DCB SmartBuy Hotels',c:'DCB Metal',v:'33.3%',cls:'hi',isnew:false},
+  {s:'MRCC Reward Multiplier',c:'MRCC',v:'~15%',cls:'md',isnew:false},
+  {s:'Direct Airline MCC',c:'Axis Atlas',v:'17.7%',cls:'md',isnew:false},
+  {s:'DCB + Quarterly Milestone*',c:'DCB Metal',v:'~11%',cls:'md',isnew:true},
+  {s:'Premier Generic Forex',c:'HSBC Premier',v:'~5.1%',cls:'lo',isnew:true},
+  {s:'Klook MCC 4722',c:'TravelOne ⚡',v:'7.67%',cls:'md',isnew:false},
+  {s:'GetYourGuide MCC 7991',c:'Amex Plat Charge',v:'7.12%',cls:'lo',isnew:false},
+];
+function buildOpt(){
+  const el=document.getElementById('screen-optimize');
+  const rtrows=RETURNS.map(r=>`<div class="rtrow"><div><div class="rtspend">${r.s}${r.isnew?'<span class="newtag">updated</span>':''}</div><div class="rtcard">${r.c}</div></div><div class="rtval ${r.cls}">${r.v}</div></div>`).join('');
+  el.innerHTML=`<div class="stitle">Strategy</div>
+  <div class="opthero"><div class="opthd">⚡ Net Effective Returns</div>${rtrows}</div>
+  <div class="gcard" style="padding:13px 15px;margin-bottom:11px"><div style="font-size:14px;font-weight:800;margin-bottom:10px">💰 Valuation Anchors</div>
+  <div class="valrow"><span class="valname">Accor ALL</span><span class="valnum">₹2.1/pt</span></div>
+  <div class="valrow"><span class="valname">SQ KrisFlyer (Atlas 1:2)</span><span class="valnum">₹1.6 CPP</span></div>
+  <div class="valrow"><span class="valname">Amex MR</span><span class="valnum">₹1.5 CPP</span></div>
+  <div class="valrow"><span class="valname">Marriott Bonvoy</span><span class="valnum">₹0.8 CPP</span></div></div>
+  <div class="stitle" style="margin-top:4px">Active Caps</div>
+  <div class="capcard"><div class="caphd"><div><div class="capname">HSBC Premier Hopper</div><div class="capsub">Hotels 36X + Flights 18X combined</div></div><div class="capval">18k/mo</div></div><div class="capbar"><div class="capfill" style="width:0%;background:linear-gradient(90deg,var(--accent),var(--purple))"></div></div></div>
+  <div class="capcard"><div class="caphd"><div><div class="capname">Axis Atlas – Group A</div><div class="capsub">KrisFlyer + Qantas · deploy by Dec 31</div></div><div class="capval">30k/yr</div></div><div class="capbar"><div class="capfill" style="width:0%;background:linear-gradient(90deg,var(--gold),var(--amber))"></div></div></div>
+  <div class="capcard"><div class="caphd"><div><div class="capname">DCB SmartBuy Hotel Bonus</div><div class="capsub">~₹33,333 hotel spend to exhaust</div></div><div class="capval">10k RP/mo</div></div><div class="capbar"><div class="capfill" style="width:0%;background:linear-gradient(90deg,#6D28D9,var(--purple))"></div></div></div>
+  <div class="capcard"><div class="caphd"><div><div class="capname">Amex Reward Multiplier</div><div class="capsub">Shared: MRCC + Plat Charge</div></div><div class="capval">25k MR/mo</div></div><div class="capbar"><div class="capfill" style="width:0%;background:linear-gradient(90deg,#1D4ED8,var(--purple))"></div></div></div>
+  <div class="stitle" style="margin-top:14px">Transfer Chains</div>
+  <div class="chain"><div class="chaintitle">✈️ Axis Atlas → SQ KrisFlyer</div><div class="chainsteps">5 EM/₹100 → KrisFlyer 1:2 → 10 miles/₹100</div><div class="chainyield">~17.7% net at ₹1.6 CPP (after 4.13% forex)</div><div class="chainnote">⚠️ Group A cap 30k/yr. Prioritise J/F class. Deploy by Dec 31.</div></div>
+  <div class="chain"><div class="chaintitle">🎯 DCB → Finnair → BA → Qatar Avios</div><div class="chainsteps">DCB RP → Finnair 1:1 → BA Avios 1:1 → Qatar 1:1</div><div class="chainyield">Same-day · Doubles Avios vs DCB→Qatar direct (2:1)</div><div class="chainnote">One-time Finnair–BA account link required.</div></div>
+  <div class="chain"><div class="chaintitle">🏨 Atlas → ITC → Marriott (Group B)</div><div class="chainsteps">5 EM → ITC 1:2 = 10 pts → Marriott 2:3 = 15 pts</div><div class="chainyield">15 Marriott pts per 5 EDGE Miles (Group B, uncapped)</div></div>
+  <div class="stitle" style="margin-top:14px">On The Horizon</div>
+  <div class="gcard" style="padding:13px 15px">
+    <div class="hzitem"><div class="hzdot" style="background:var(--green)"></div><div><div class="hztext"><strong>HSBC Premier LIVE.</strong> Confirm TravelOne pts merge with RM before downgrade.</div></div></div>
+    <div class="hzitem"><div class="hzdot" style="background:var(--red)"></div><div><div class="hztext"><strong>DCB quarterly cycle ends.</strong> ₹1.4L remaining for 10k RP bonus (₹10,500 value).</div><div class="hzdate">June 30, 2026</div></div></div>
+    <div class="hzitem"><div class="hzdot" style="background:var(--gold)"></div><div><div class="hztext"><strong>TravelOne 3.5% cashback expires.</strong> Premier takes over generic forex from July.</div><div class="hzdate">June 2026</div></div></div>
+    <div class="hzitem"><div class="hzdot" style="background:var(--red)"></div><div><div class="hztext"><strong>TravelOne renewal.</strong> With Premier live, evaluate closure/downgrade.</div><div class="hzdate">August 2026</div></div></div>
+    <div class="hzitem"><div class="hzdot" style="background:var(--accent)"></div><div><div class="hztext"><strong>UK trip.</strong> Premier Hopper (36X hotels = 75.6% gross). FHR for London hotel.</div><div class="hzdate">July 2026</div></div></div>
+    <div class="hzitem"><div class="hzdot" style="background:var(--amber)"></div><div><div class="hztext"><strong>Axis Group A 30k.</strong> KrisFlyer 1:2 for J/F class. Deploy by Dec 31, 2026.</div><div class="hzdate">Dec 2026</div></div></div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════
+// CHAT TAB
+// ══════════════════════════════════════════════════════════
+const CHIPS=['DCB milestone boost?','Premier Hopper vs TravelOne?','UK trip July?','GetYourGuide MCC?','Klook post-June?','Finnair Avios chain?','Group A deploy?','MRCC monthly target?'];
+function reply(q){
+  q=q.toLowerCase();
+  if(q.match(/dcb.*milestone|milestone.*dcb|quarterly|8%|11%/)){
+    const def=MS_DEFS[0]; const boost=msBoost(def); const eff=msEffRate(def);
+    return `<strong>DCB Quarterly Milestone — current status:</strong><br><br>Spent: ${lakhs(MS[def.id])} of ${lakhs(def.threshold)}<br>Remaining: <strong>${lakhs(msRemaining(def))}</strong><br>Milestone value: ₹${def.rewardValue.toLocaleString()} (10k RP → Accor 2:1)<br><br>Boost on remaining spend: <strong>+${boost.toFixed(1)}%</strong><br>Effective rate: <strong>${eff.rate.toFixed(1)}%</strong> (3.5% base + ${boost.toFixed(1)}% milestone)<br><br>⏰ ${daysLeft('2026-06-30')} days remaining in cycle. Update spend on the 🎯 Miles tab.`;
+  }
+  if(q.match(/mrcc.*monthly|monthly.*bonus|4.*txn|transaction.*bonus/))
+    return `<strong>MRCC Monthly Bonus:</strong><br><br>4 transactions ≥ ₹1,500 → 1,000 bonus MR → ₹1,500 value at ₹1.5 CPP.<br><br>Boost per qualifying transaction: +25% effective rate on that ₹1,500 spend.<br><br>Track on 🎯 Miles tab. ${MS[MS_DEFS[5].id]}/4 txns done this month.`;
+  if(q.match(/premier.*hopper|hopper.*premier|75|36 pt/))
+    return `<strong>HSBC Premier Hopper — your #1 earner:</strong><br><br>🏨 Hotels: 36 pts/₹100 → Accor ALL → <strong>₹75.6/₹100</strong><br>✈️ Flights: 18 pts/₹100 → <strong>₹37.8/₹100</strong><br><br>18k pts/month cap shared. Hotels earn 2× faster — allocate cap to hotels.`;
+  if(q.match(/uk|july.*2026|london/))
+    return `<strong>UK trip July 2026:</strong><br><br>✈️ Flights → Premier Hopper (37.8%)<br>🏨 Hotels → Premier Hopper (75.6%) 🚀<br>🌍 Other forex → Premier (0.99% markup)<br>🏧 ATM → IDFC WOW<br><br>Consider Amex Plat Charge FHR for London hotel.`;
+  if(q.match(/getyourguide|7991/))
+    return `<strong>GetYourGuide = MCC 7991 (Entertainment)</strong><br><br>Premier + TravelOne Hopper do NOT apply. Use <strong>Amex Plat Charge</strong> (3X MR = ~7.12% net).<br><br>Klook=4722 ✅ · GetYourGuide=7991 ❌ — always verify MCC.`;
+  if(q.match(/klook.*post|klook.*june|klook.*july/))
+    return `Post-June 2026 for Klook: TravelOne cashback expires. Amex Plat Charge (~7.12%) > Premier base (~5.1%). Switch card from July.`;
+  if(q.match(/klook|4722/))
+    return `Klook = MCC 4722 → TravelOne accelerated rate applies → ~7.67% net (while cashback active through June). Post-June: Amex Plat Charge wins.`;
+  if(q.match(/finnair|avios chain/))
+    return `<strong>DCB → Finnair → BA → Qatar:</strong><br>All 1:1, instant, same-day. Doubles Avios vs DCB→Qatar direct (2:1). One-time Finnair–BA link required.`;
+  if(q.match(/group a|30.?000|krisflyer|sq/))
+    return `<strong>Group A (30k/yr):</strong> SQ KrisFlyer 1:2 + Qantas 1:2. Deploy by Dec 31, 2026 for J/F class. SQ J class Europe ~67,500 miles.`;
+  return `<strong>Quick routing (May 2026):</strong><br><br>🏨 Portal hotels → Premier Hopper (75.6%)<br>✈️ Portal flights → Premier Hopper (37.8%)<br>🛒 INR spend → DCB Metal (~${msEffRate(MS_DEFS[0]).rate.toFixed(1)}% with milestone)<br>🌍 Generic forex → Premier (~5.1%)<br>🎪 GetYourGuide → Amex Plat Charge<br>🎫 Klook → TravelOne (⚡ till June)<br>🏧 ATM → IDFC WOW<br><br>Check 🎯 Miles tab for live milestone rates.`;
+}
+let chatInited=false;
+function buildChat(){
+  if(chatInited) return;
+  chatInited=true;
+  // Add quick chips above the message list
+  const cl=document.getElementById('cl');
+  const chipDiv=document.createElement('div');
+  chipDiv.className='chiprow';
+  chipDiv.style.cssText='display:flex;gap:7px;overflow-x:auto;padding:4px 0 8px;flex-shrink:0;margin-bottom:4px';
+  chipDiv.innerHTML=CHIPS.map(c=>`<button class="chip" onclick="chipq('${c}')">${c}</button>`).join('');
+  cl.before(chipDiv);
+  botmsg("Hey Romil 👋 DCB quarterly is at "+lakhs(MS.dcb_q)+" ("+msEffRate(MS_DEFS[0]).rate.toFixed(1)+"% effective with milestone). Ask me about routing, MCCs, caps, or transfer chains.");
+}
+function chipq(t){document.getElementById('ci').value=t;send()}
+function botmsg(text,typing=false){
+  const cl=document.getElementById('cl'),d=document.createElement('div');d.className='mbot';
+  if(typing){d.id='typing';d.innerHTML=`<div class="mbub"><span class="typing"><span></span><span></span><span></span></span></div>`}
+  else{const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});d.innerHTML=`<div class="mbub">${text}</div><div class="mtime">${t}</div>`}
+  cl.appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'});return d;
+}
+function usermsg(text){
+  const cl=document.getElementById('cl'),d=document.createElement('div');d.className='muser';
+  d.innerHTML=`<div class="mbub">${text}</div><div class="mtime">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;
+  cl.appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'});
+}
+function send(){
+  const inp=document.getElementById('ci'),text=inp.value.trim();if(!text)return;
+  inp.value='';inp.style.height='auto';usermsg(text);
+  const t=botmsg('',true);setTimeout(()=>{t.remove();botmsg(reply(text))},600+Math.random()*300);
+}
+// ══════════════════════════════════════════════════════════
+// NEWS DATA
+// ══════════════════════════════════════════════════════════
+const NEWS = [
+  {
+    id:'ai_fest', hot:true,
+    title:'Air India Maharaja Club — Points Fest',
+    summary:'Up to 50% bonus Maharaja Points when converting from 100+ eligible partners. Register at airindia.com/maharaja-club/points-fest before transferring.',
+    src:'Live From A Lounge', srcCls:'src-lfal',
+    url:'https://livefromalounge.com/air-india-points-fest-may-2026/',
+    date:'May 2026', expires:'May 31, 2026',
+    tags:['Live Offer','Airlines'],
+    warn:'⚠️ Axis Bank + HSBC India excluded from bonus. HDFC DCB eligible.',
+    impact:'🟢 High — use HDFC DCB to transfer to Maharaja Club this month for 50% more miles.',
+  },
+  {
+    id:'ac_aeroplan', hot:true,
+    title:'Air Canada Aeroplan — Up to 90% Bonus on Buy',
+    summary:'Targeted offer on buying Aeroplan points — ~₹1,380 per 1,000 pts at top tier. Per-transaction limit raised to 500,000 pts. Billed in CAD; no tax outside Canada.',
+    src:'The Double Dip', srcCls:'src-dip',
+    url:'https://doubledip.in/blog/air-canada-aeroplan-up-to-90-bonus-on-buying-points-may-2026',
+    date:'May 2026', expires:'May 31, 2026',
+    tags:['Live Offer','Buy Points','Airlines'],
+    impact:'🟡 Medium — only if you have Aeroplan redemptions planned.',
+  },
+  {
+    id:'ai_reval', hot:false,
+    title:'Air India Award Chart Revaluation — Full Analysis',
+    summary:'Significant changes to Maharaja Club redemption rates from April 2026. Some sweet spots removed; India–Europe rates adjusted. Read before your next AI redemption.',
+    src:'The Double Dip', srcCls:'src-dip',
+    url:'https://doubledip.in/blog/air-india-revaluation-april-2026',
+    date:'April 2026',
+    tags:['Airlines','Strategy'],
+    impact:'🔴 High — check this before redeeming any Maharaja Club points.',
+  },
+  {
+    id:'qatar_relief', hot:false,
+    title:'Qatar Privilege Club Tier Relief (Feb–May 2026)',
+    summary:'Tiers expiring Feb 28–May 31, 2026 may be extended if ≥90% of required Qpoints earned by renewal date. Standard thresholds otherwise unchanged.',
+    src:'Loyalty Lobby', srcCls:'src-ll',
+    url:'https://loyaltylobby.com/2026/03/29/qatar-airways-clarifies-privilege-club-tier-extensions-qualification-requirements-for-february-28-may-31-2026-3rd-update/',
+    date:'March 2026', expires:'May 31, 2026',
+    tags:['Airlines','Status'],
+    impact:'🟡 Low — check your QR Privilege Club account if tier was due to expire.',
+  },
+  {
+    id:'accor_plat', hot:false,
+    title:'Accor Platinum Strategy 2026',
+    summary:'Complete guide to reaching ALL Platinum (60 nights / 14,000 status pts) and maximising value for Indian cardholders. Premier Hopper hotel bookings are now the most efficient earn path.',
+    src:'The Double Dip', srcCls:'src-dip',
+    url:'https://doubledip.in/blog/accor-platinum-2026',
+    date:'2026',
+    tags:['Hotels','Strategy'],
+    impact:'🟢 High — highly relevant. Premier Hopper hotels give 75.6% gross return toward Accor.',
+  },
+  {
+    id:'avios_india', hot:false,
+    title:'Why Avios is the Best Starting Point for Indian Travelers',
+    summary:'BA Avios is flexible, transferable from multiple Indian cards, and great for QR/IB/BA redemptions. DCB → Finnair → BA is the recommended transfer chain.',
+    src:'The Double Dip', srcCls:'src-dip',
+    url:'https://doubledip.in/blog/why-i-recommend-avios-to-every-indian-starting-with-points',
+    date:'2026',
+    tags:['Strategy'],
+    impact:'🟡 Medium — strategic read, especially for your DCB Finnair chain.',
+  },
+];
+
+// ══════════════════════════════════════════════════════════
+// LOYALTY PROGRAMS
+// ══════════════════════════════════════════════════════════
+const PROGRAMS = [
+  {
+    id:'ai',
+    name:'Air India Maharaja Club',
+    short:'MAHARAJA CLUB',
+    emoji:'🇮🇳',
+    bg:'linear-gradient(135deg,#8B0000 0%,#C41E3A 100%)',
+    status:'Platinum',
+    statusBg:'rgba(167,139,250,.2)',statusTxt:'var(--purple)',
+    // Progress: Platinum is the top tier. Maintain with 60 flights or 45k tier points/yr.
+    prog:[{label:'Maintain Platinum (Tier Pts)',cur:0,target:45000,unit:'tier pts',color:'var(--purple)',note:'6 tier pts per ₹100 on AI flights'}],
+    nextTier:null,
+    nextTierLabel:'Platinum is the highest tier',
+    perks:['3 upgrade vouchers/yr','20kg extra baggage','Priority check-in & boarding','Star Alliance Gold benefits','Lounge access on AI flights'],
+    partners:'HDFC DCB (1:1), HSBC TravelOne (1:1), Amex Platinum, Axis Atlas (1:1)',
+    hotOffer:'🔥 Points Fest May 2026: 50% bonus via HDFC DCB transfers (Axis/HSBC excluded)',
+    lsKey:'loy_ai',
+  },
+  {
+    id:'accor',
+    name:'Accor ALL',
+    short:'ALL – ACCOR LIVE LIMITLESS',
+    emoji:'🏨',
+    bg:'linear-gradient(135deg,#1A0533 0%,#7B2D8B 100%)',
+    status:'Gold',
+    statusBg:'rgba(251,191,36,.18)',statusTxt:'var(--gold)',
+    prog:[{label:'Progress to Platinum',cur:30,target:60,unit:'nights',color:'var(--purple)',note:'Platinum = 60 elite nights or 14,000 status pts/yr'}],
+    nextTier:'Platinum',
+    nextTierLabel:'Platinum: 60 nights or 14,000 status pts',
+    maintainLabel:'Maintain Gold: 30 nights or 7,000 status pts/yr',
+    perks:['Late checkout 4pm (Platinum)','Welcome drink','Priority check-in','Room upgrade when available','10% F&B discount'],
+    partners:'HSBC Premier Hopper 1:1 (75.6% gross), TravelOne 1:1, DCB SmartBuy 2:1',
+    hotOffer:'💡 Premier Hopper hotels = fastest path to Accor Platinum nights + points',
+    lsKey:'loy_accor',
+  },
+  {
+    id:'marriott',
+    name:'Marriott Bonvoy',
+    short:'BONVOY',
+    emoji:'🏩',
+    bg:'linear-gradient(135deg,#660000 0%,#A52020 100%)',
+    status:'Titanium Elite',
+    statusBg:'rgba(251,146,60,.18)',statusTxt:'var(--amber)',
+    prog:[{label:'Progress to Ambassador',cur:75,target:100,unit:'nights',color:'var(--amber)',note:'Ambassador = 100 nights + $23,000 spend'},{label:'Annual Spend (Ambassador)',cur:0,target:23000,unit:'USD',color:'var(--gold)',note:'Both nights AND spend required'}],
+    nextTier:'Ambassador Elite',
+    nextTierLabel:'Ambassador: 100 nights + $23,000 spend',
+    maintainLabel:'Maintain Titanium: 75 nights/yr. Status valid through Feb 2028.',
+    perks:['Suite upgrades (select)','48hr Suite Night Guarantee','Lounge access','75% bonus pts','Choice benefit','Your24 checkout'],
+    partners:'Amex Platinum Charge (direct), HSBC TravelOne (1:1), Atlas → ITC → Marriott (Group B)',
+    hotOffer:'💡 Marriott Titanium status valid through Feb 2028 — soft landing if not requalified.',
+    lsKey:'loy_marriott',
+  },
+  {
+    id:'krisflyer',
+    name:'Singapore Airlines KrisFlyer',
+    short:'KRISFLYER',
+    emoji:'🇸🇬',
+    bg:'linear-gradient(135deg,#003087 0%,#0055A5 100%)',
+    status:'Member',
+    statusBg:'rgba(56,189,248,.15)',statusTxt:'var(--accent)',
+    prog:[{label:'To Elite Silver',cur:0,target:25000,unit:'Elite miles',color:'var(--accent)',note:'Elite Silver: 25k Elite miles/12 months'}],
+    nextTier:'Elite Silver',
+    nextTierLabel:'Elite Silver: 25,000 Elite miles in 12 months',
+    perks:['Earn miles on SQ, SilkAir, Scoot','Partner hotel/car transfers','Best J/F class award redemptions for Indians'],
+    partners:'Axis Atlas 1:2 (Group A cap, best path), HDFC DCB 1:1, HSBC Premier/TravelOne 1:1, Amex Plat',
+    hotOffer:'💡 Axis Atlas → KrisFlyer 1:2 = 10 miles/₹100 on airline MCC. Best value: SQ J class to Europe (~67.5k miles).',
+    lsKey:'loy_kf',
+  },
+  {
+    id:'avios',
+    name:'British Airways Executive Club',
+    short:'AVIOS',
+    emoji:'🇬🇧',
+    bg:'linear-gradient(135deg,#003580 0%,#075AAA 100%)',
+    status:'Member',
+    statusBg:'rgba(56,189,248,.15)',statusTxt:'var(--accent)',
+    prog:[{label:'Tier Points (to Silver)',cur:0,target:600,unit:'tier pts',color:'var(--accent)',note:'BA Silver: 600 tier points/yr'}],
+    nextTier:'Bronze / Silver',
+    nextTierLabel:'Bronze: 300 tier pts · Silver: 600 tier pts',
+    perks:['Avios shared pool with QR, Iberia, Aer Lingus','Oneworld partner benefits with status','Short-haul India redemptions'],
+    partners:'DCB → Finnair 1:1 → BA Avios 1:1 (instant, same-day), HSBC TravelOne 1:1, Amex Plat',
+    hotOffer:'💡 DCB → Finnair → BA chain doubles Avios yield vs DCB → Qatar direct (2:1).',
+    lsKey:'loy_avios',
+  },
+  {
+    id:'qatar',
+    name:'Qatar Airways Privilege Club',
+    short:'PRIVILEGE CLUB',
+    emoji:'🇶🇦',
+    bg:'linear-gradient(135deg,#5C0632 0%,#8B0041 100%)',
+    status:'Member',
+    statusBg:'rgba(251,191,36,.15)',statusTxt:'var(--gold)',
+    prog:[{label:'Qpoints (to Silver)',cur:0,target:150,unit:'Qpoints',color:'var(--gold)',note:'Silver: 150 Qpoints/12 months'}],
+    nextTier:'Silver',
+    nextTierLabel:'Silver: 150 Qpoints · Gold: 270 · Platinum: 600',
+    perks:['Avios shared with BA / Iberia','Al Maha lounge DOH (Platinum)','Oneworld Gold (Platinum = Oneworld Emerald)'],
+    partners:'HSBC TravelOne → Qatar 1:1, DCB → Finnair → BA → Qatar (all 1:1 instant)',
+    hotOffer:'ℹ️ Tier relief active through May 31, 2026 if your tier was expiring — check your account.',
+    lsKey:'loy_qr',
+  },
+  {
+    id:'finnair',
+    name:'Finnair Plus',
+    short:'FINNAIR PLUS',
+    emoji:'🇫🇮',
+    bg:'linear-gradient(135deg,#003580 0%,#00559E 100%)',
+    status:'Member',
+    statusBg:'rgba(56,189,248,.12)',statusTxt:'var(--accent)',
+    prog:[],
+    nextTier:null,
+    nextTierLabel:'Base member — used for DCB→Finnair→BA Avios transfer chain',
+    perks:['Free transfer to BA Avios 1:1 (instant)','Transfers from HDFC DCB Metal instant'],
+    partners:'HDFC DCB Metal → Finnair 1:1 (instant) → BA Avios 1:1 → Qatar Avios 1:1',
+    hotOffer:'💡 Primary purpose: DCB→Finnair→BA chain. Keep account active. Avios transfers don\'t reset 18-month expiry.',
+    lsKey:'loy_finnair',
+  },
+];
+
+// ══════════════════════════════════════════════════════════
+// NEWS TAB
+// ══════════════════════════════════════════════════════════
+let activeFilter = 'All';
+function buildNews(){
+  const el=document.getElementById('screen-news');
+  const filters=['All','Live Offers','Airlines','Hotels','Strategy'];
+  const chips=filters.map(f=>`<div class="fchip${f==='All'?' active':''}" onclick="filterNews('${f}',this)">${f==='Live Offers'?'🔥 ':''}${f}</div>`).join('');
+
+  const cards=NEWS.map(n=>{
+    const tagHtml=n.tags.map(t=>`<span class="ntag">${t}</span>`).join('');
+    const expHtml=n.expires?`<span class="news-exp">Expires ${n.expires}</span>`:'';
+    return `<div class="news-card" id="nc-${n.id}" onclick="openNews('${n.url}')" data-tags="${n.tags.join(',')}">
+      ${n.hot?'<div class="news-hot-glow"></div>':''}
+      <div class="news-top">
+        <span class="news-src ${n.srcCls}">${n.src}</span>
+        ${n.hot?`<span class="news-hot-pill"><span class="hot-blink"></span>LIVE</span>`:''}
+        <span style="flex:1"></span>
+        <span style="font-size:11px;color:var(--muted)">${n.date}</span>
+      </div>
+      <div class="news-title">${n.title}</div>
+      <div class="news-summary">${n.summary}</div>
+      ${n.warn?`<div class="news-warn">${n.warn}</div>`:''}
+      ${n.impact?`<div class="news-impact">${n.impact}</div>`:''}
+      <div class="news-footer">
+        <div class="news-tags">${tagHtml}</div>
+        <div style="display:flex;gap:10px;align-items:center">${expHtml}<span class="news-read">Read →</span></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML=`<div class="stitle">Points & Miles News</div>
+  <div class="filter-chips">${chips}</div>
+  ${cards}
+  <div class="news-sources-hd">Sources & Feeds</div>
+  <a class="source-link" href="https://doubledip.in/blog" target="_blank"><div><div class="source-link-name">The Double Dip</div><div class="source-link-url">doubledip.in/blog</div></div><span style="color:var(--muted)">→</span></a>
+  <a class="source-link" href="https://livefromalounge.com" target="_blank"><div><div class="source-link-name">Live From A Lounge</div><div class="source-link-url">livefromalounge.com</div></div><span style="color:var(--muted)">→</span></a>
+  <a class="source-link" href="https://cardmaven.in" target="_blank"><div><div class="source-link-name">Card Maven</div><div class="source-link-url">cardmaven.in</div></div><span style="color:var(--muted)">→</span></a>
+  <a class="source-link" href="https://technofino.in" target="_blank"><div><div class="source-link-name">TechnoFino</div><div class="source-link-url">technofino.in</div></div><span style="color:var(--muted)">→</span></a>
+  <div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">Last refreshed: May 30, 2026</div>`;
+}
+
+function filterNews(tag, el){
+  activeFilter=tag;
+  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  NEWS.forEach(n=>{
+    const card=document.getElementById('nc-'+n.id);
+    if(!card) return;
+    const show = tag==='All' || n.tags.includes(tag) || (tag==='Live Offers' && n.hot);
+    card.classList.toggle('hidden',!show);
+  });
+}
+
+function openNews(url){
+  if(url) window.open(url,'_blank');
+}
+
+// ══════════════════════════════════════════════════════════
+// LOYALTY TAB
+// ══════════════════════════════════════════════════════════
+// Load saved data from localStorage
+function lsGet(key,def){ try{const v=localStorage.getItem(key);return v?JSON.parse(v):def}catch(e){return def} }
+function lsSet(key,val){ try{localStorage.setItem(key,JSON.stringify(val))}catch(e){} }
+
+function buildLoyalty(){
+  const el=document.getElementById('screen-loyalty');
+  let h=`<div class="stitle">Loyalty Wallet</div>
+  <div class="loy-notice">🔒 Account numbers saved locally on your device. Tap any number to reveal, tap "Edit" to update. Data never leaves your phone.</div>`;
+  PROGRAMS.forEach(p=>{ h+=renderLoyCard(p); });
+  el.innerHTML=h;
+}
+
+function renderLoyCard(p){
+  const saved=lsGet(p.lsKey,{num:'',pin:'',notes:'',progOverrides:{}});
+  const masked=saved.num ? '••••••••' : '— add number';
+  const pinMasked=saved.pin ? '••••••••' : '';
+
+  const progHtml=p.prog.map((pr,i)=>{
+    const curVal=saved.progOverrides&&saved.progOverrides[i]!=null?saved.progOverrides[i]:pr.cur;
+    const pct=Math.min(100,(curVal/pr.target)*100);
+    return `<div class="tier-block">
+      <div class="tier-hd"><span class="tier-name">${pr.label}</span><span class="tier-pct">${pct.toFixed(0)}%</span></div>
+      <div class="tier-bar"><div class="tier-fill" style="width:${pct}%;background:${pr.color}"></div></div>
+      <div class="tier-labels">
+        <span class="tier-cur">${pr.unit==='USD'?'$':''}<input style="background:none;border:none;color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:700;width:60px;outline:none" type="number" value="${curVal}" onchange="updateLoyProg('${p.id}',${i},this.value)">&nbsp;${pr.unit}</span>
+        <span class="tier-target" style="color:${pr.color}">→ ${pr.unit==='USD'?'$':''}${pr.target.toLocaleString()} ${pr.unit}</span>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:3px">${pr.note}</div>
+    </div>`;
+  }).join('');
+
+  const perksHtml=p.perks.map(pk=>`<div class="lperk-row"><span style="color:var(--green);font-size:11px">✓</span><span>${pk}</span></div>`).join('');
+
+  return `<div class="lcard" id="lc-${p.id}">
+    <div class="lcard-art" style="background:${p.bg}" onclick="togLoy('${p.id}')">
+      <div class="lcard-art-inner">
+        <div><div class="lcard-name">${p.name}</div><div class="lcard-short">${p.short}</div></div>
+        <div class="lcard-status-badge" style="background:${p.statusBg};color:${p.statusTxt}">${p.status}</div>
+      </div>
+    </div>
+    <div class="lcard-body" id="lb-${p.id}">
+      <div class="lcard-top">
+        <div><div class="status-big" style="color:${p.statusTxt}">${p.status}</div><div class="status-note">${p.nextTierLabel}</div></div>
+      </div>
+      <!-- account number -->
+      <div class="acct-row" onclick="toggleNum('${p.id}')">
+        <span class="acct-icon">🔑</span>
+        <div style="flex:1;min-width:0">
+          <div class="acct-lbl">Account Number</div>
+          <div class="acct-num" id="an-${p.id}">${masked}</div>
+        </div>
+        ${saved.pin?`<div style="flex:1;min-width:0"><div class="acct-lbl">PIN / Password</div><div class="acct-num" id="ap-${p.id}">${pinMasked}</div></div>`:''}
+        <button class="acct-edit" onclick="event.stopPropagation();editLoy('${p.id}')">Edit</button>
+      </div>
+      <div class="acct-input-wrap" id="ai-${p.id}">
+        <input class="acct-field" id="af-num-${p.id}" type="text" placeholder="Account / Member number" value="${saved.num||''}">
+        <input class="acct-field" id="af-pin-${p.id}" type="text" placeholder="PIN / Password (optional)">
+        <button class="acct-save" onclick="saveLoy('${p.id}')">Save</button>
+      </div>
+      ${progHtml?`<div>${progHtml}</div>`:''}
+      ${p.maintainLabel?`<div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-style:italic">${p.maintainLabel}</div>`:''}
+      <div class="lbd">
+        <div class="lbd-cell"><div class="lbd-lbl">Partners</div><div style="font-size:11px;color:var(--text2);margin-top:2px;line-height:1.5">${p.partners.split(',')[0]}</div></div>
+        <div class="lbd-cell"><div class="lbd-lbl">Program</div><div class="lbd-val b">${p.emoji} ${p.short.split(' ')[0]}</div></div>
+      </div>
+      <div class="lperks" style="margin-bottom:10px">${perksHtml}</div>
+      ${p.hotOffer?`<div class="hot-offer-bar">${p.hotOffer}</div>`:''}
+    </div>
+  </div>`;
+}
+
+function togLoy(id){
+  const b=document.getElementById('lb-'+id);
+  b.classList.toggle('op');
+}
+
+function toggleNum(id){
+  const p=PROGRAMS.find(x=>x.id===id);
+  const saved=lsGet(p.lsKey,{});
+  if(!saved.num) return editLoy(id);
+  const el=document.getElementById('an-'+id);
+  const showing=el.dataset.showing==='1';
+  el.textContent=showing?'••••••••':saved.num;
+  el.dataset.showing=showing?'':'1';
+  const apEl=document.getElementById('ap-'+id);
+  if(apEl&&saved.pin){ apEl.textContent=showing?'••••••••':saved.pin; apEl.dataset.showing=showing?'':'1'; }
+}
+
+function editLoy(id){
+  const wrap=document.getElementById('ai-'+id);
+  const open=wrap.classList.contains('open');
+  wrap.classList.toggle('open',!open);
+  if(!open){ const inp=document.getElementById('af-num-'+id); if(inp) inp.focus(); }
+}
+
+function saveLoy(id){
+  const p=PROGRAMS.find(x=>x.id===id);
+  const num=document.getElementById('af-num-'+id).value.trim();
+  const pin=document.getElementById('af-pin-'+id).value.trim();
+  const existing=lsGet(p.lsKey,{});
+  lsSet(p.lsKey,{...existing,num,pin});
+  // update display
+  const el=document.getElementById('an-'+id);
+  if(el){ el.textContent=num?'••••••••':'— add number'; el.dataset.showing=''; }
+  const apEl=document.getElementById('ap-'+id);
+  if(apEl&&pin){ apEl.textContent='••••••••'; apEl.dataset.showing=''; }
+  document.getElementById('ai-'+id).classList.remove('open');
+}
+
+function updateLoyProg(id,idx,val){
+  const p=PROGRAMS.find(x=>x.id===id);
+  const saved=lsGet(p.lsKey,{progOverrides:{}});
+  if(!saved.progOverrides) saved.progOverrides={};
+  saved.progOverrides[idx]=parseFloat(val)||0;
+  lsSet(p.lsKey,saved);
+  // update bar
+  const pr=p.prog[idx];
+  const pct=Math.min(100,(saved.progOverrides[idx]/pr.target)*100);
+  const bars=document.querySelectorAll(`#lc-${id} .tier-fill`);
+  if(bars[idx]) bars[idx].style.width=pct+'%';
+  const pcts=document.querySelectorAll(`#lc-${id} .tier-pct`);
+  if(pcts[idx]) pcts[idx].textContent=pct.toFixed(0)+'%';
+}
+
+// INIT
+buildSpend(); buildMiles(); buildNews(); buildLoyalty(); buildCards(); buildOpt();
+// Wire chat input events (panel is always in DOM)
+document.getElementById('ci').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'});
+document.getElementById('ci').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
+</script>
+</body>
+</html>
