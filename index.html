@@ -1810,6 +1810,25 @@ function applyGmailTransactions(){
   if(sub) sub.textContent=`Applied ${sel.length} txn${sel.length!==1?'s':''} · ₹${totalAmt.toLocaleString('en-IN')} added`;
 }
 
+// ══════════════════════════════════════════════════════════
+// SEED — pre-populate loyalty numbers + API keys on first load
+// Only sets if key absent (preserves any user edits)
+// ══════════════════════════════════════════════════════════
+(function _seed(){
+  const s=(k,v)=>{ if(!localStorage.getItem(k)) localStorage.setItem(k,v); };
+  const loy=(num,pin)=>JSON.stringify({num,pin,notes:'',progOverrides:{}});
+  // API keys
+  s('ciq_anthropic_key','sk-ant-api03-WnrHi-fh8BLBroSfxIskKuKT5fZrz3Vb5V8GQ-JCH3ftf1fX4ra_2Lwsf34-BaO2Hitvgvz92lDC9PCSinJ2OA-3iYXXgAA');
+  s('ciq_google_client_id','591325901283-i6q660l9v5037f7r0qmu9o2phscr6gqo.apps.googleusercontent.com');
+  // Loyalty programs (from Notes — only those with known numbers)
+  s('loy_ai',       loy('324165843',              'MH@14@ce693'));   // Air India Maharaja Club
+  s('loy_marriott', loy('049226042',              'MH@14@hc6119')); // Marriott Bonvoy
+  s('loy_kf',       loy('8164930623',             'MH-14-ce693'));  // SQ KrisFlyer
+  s('loy_avios',    loy('04782745',               'CYS8MFJE9RYE552HYGABA3JG')); // BA Executive Club
+  s('loy_qr',       loy('819264420',              ''));              // Qatar Privilege Club
+  // loy_accor and loy_finnair not in Notes — user can add via Edit button in Loyalty tab
+})();
+
 // INIT
 buildSpend(); buildMiles(); buildNews(); buildLoyalty(); buildCards(); buildOpt();
 // Wire chat input events (panel is always in DOM)
