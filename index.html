@@ -337,6 +337,52 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;back
 .typing span:nth-child(2){animation-delay:.14s}.typing span:nth-child(3){animation-delay:.28s}
 @keyframes tdot{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-4px);opacity:1}}
 /* (chat now floating — see .chat-fab above) */
+
+/* ── API KEY MODAL ── */
+.apimodal-bg{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:300;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.apimodal-bg.on{display:flex}
+.apimodal{background:#0D0D1F;border:1px solid var(--bd2);border-radius:20px;padding:24px;width:100%;max-width:380px}
+.apimodal-title{font-size:17px;font-weight:800;margin-bottom:6px;letter-spacing:-.3px}
+.apimodal-sub{font-size:12.5px;color:var(--muted);line-height:1.55;margin-bottom:15px}
+.apimodal-input{width:100%;background:var(--s1);border:1px solid var(--bd2);border-radius:10px;padding:10px 13px;font-size:13.5px;font-family:'JetBrains Mono',monospace;color:var(--text);outline:none;margin-bottom:10px;-webkit-text-security:disc}
+.apimodal-input:focus{border-color:var(--accent)}
+.apimodal-btn{width:100%;background:linear-gradient(135deg,#1360A0,#38BDF8);border:none;border-radius:10px;padding:12px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;margin-bottom:8px;font-family:'Syne',sans-serif}
+.apimodal-skip{width:100%;background:none;border:1px solid var(--bd);border-radius:10px;padding:9px;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;font-family:'Syne',sans-serif}
+/* key icon button in chat header */
+.key-icon-btn{background:var(--s1);border:1px solid var(--bd);width:28px;height:28px;border-radius:8px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:border-color .15s}
+.key-icon-btn:active{border-color:var(--accent)}
+/* ── GMAIL SCAN ── */
+.gmail-scan-btn{display:flex;align-items:center;gap:10px;background:var(--s0);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;margin-bottom:13px;cursor:pointer;transition:border-color .15s;width:100%;font-family:'Syne',sans-serif;text-align:left}
+.gmail-scan-btn:active{border-color:var(--accentd2);background:var(--accentd)}
+.gmail-scan-icon{font-size:22px;flex-shrink:0}
+.gmail-scan-text{flex:1}
+.gmail-scan-title{font-size:13.5px;font-weight:700;color:var(--text)}
+.gmail-scan-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.gmail-sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:none;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+.gmail-sheet-bg.on{display:block}
+.gmail-sheet{position:fixed;bottom:0;left:0;right:0;z-index:210;background:#0C0C1E;border-top:1px solid var(--bd);border-radius:20px 20px 0 0;max-height:78vh;display:flex;flex-direction:column}
+.gmail-sheet-hd{padding:14px 18px 10px;border-bottom:1px solid var(--bd);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.gmail-sheet-title{font-size:15px;font-weight:800}
+.gmail-sheet-close{background:var(--s1);border:none;width:28px;height:28px;border-radius:50%;cursor:pointer;color:var(--muted);font-size:16px;display:flex;align-items:center;justify-content:center}
+.gmail-sheet-body{flex:1;overflow-y:auto;padding:12px 16px 4px}
+.gmail-sheet-body::-webkit-scrollbar{display:none}
+.txn-item{background:var(--s0);border:1px solid var(--bd);border-radius:10px;padding:10px 13px;margin-bottom:7px;display:flex;align-items:center;gap:10px}
+.txn-item.sel{border-color:rgba(16,185,129,.35);background:var(--greend)}
+.txn-info{flex:1;min-width:0}
+.txn-merchant{font-size:13px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.txn-detail{font-size:11px;color:var(--muted);margin-top:2px}
+.txn-amt{font-family:'JetBrains Mono',monospace;font-size:13.5px;font-weight:700;color:var(--accent);white-space:nowrap;flex-shrink:0}
+.txn-check{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--bd2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer}
+.txn-check.on{background:var(--green);border-color:var(--green);color:#fff}
+.gmail-apply-btn{margin:10px 16px calc(var(--safe-b) + 12px);background:linear-gradient(135deg,#1360A0,#38BDF8);border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;font-family:'Syne',sans-serif;flex-shrink:0}
+/* ── REC ROW — points display ── */
+.rec-pts{font-size:10px;color:var(--muted);margin-top:2px;font-family:'JetBrains Mono',monospace;text-align:right;white-space:nowrap}
+/* ── CARD ART — network logo + image ── */
+.ccard-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px}
+.ccard-chip-row{display:flex;align-items:center;justify-content:space-between;width:100%}
+.ccard-net{display:flex;align-items:center}
+/* ── LOYALTY LOGO ── */
+.lcard-logo{position:absolute;bottom:10px;right:14px;height:26px;width:auto;max-width:72px;object-fit:contain;opacity:.88;filter:brightness(0) invert(1);pointer-events:none}
 </style>
 </head>
 <body>
@@ -386,6 +432,28 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;back
   <button class="ntab"    onclick="go('cards',this)"><span class="ntab-icon">💳</span><span class="ntab-lbl">Cards</span></button>
   <button class="ntab"    onclick="go('optimize',this)"><span class="ntab-icon">📊</span><span class="ntab-lbl">Strategy</span></button>
 </nav>
+
+<!-- API Key / Config Modal -->
+<div class="apimodal-bg" id="apimodal-bg">
+  <div class="apimodal">
+    <div class="apimodal-title" id="am-title">API Key</div>
+    <div class="apimodal-sub" id="am-desc"></div>
+    <input class="apimodal-input" id="am-input" autocomplete="off" placeholder="">
+    <button class="apimodal-btn" onclick="saveApiModal()">Save &amp; Continue</button>
+    <button class="apimodal-skip" onclick="closeApiModal()">Later</button>
+  </div>
+</div>
+<!-- Gmail Results Sheet -->
+<div class="gmail-sheet-bg" id="gmail-sheet-bg" onclick="closeGmailSheet()">
+  <div class="gmail-sheet" onclick="event.stopPropagation()">
+    <div class="gmail-sheet-hd">
+      <div class="gmail-sheet-title">📧 Gmail Transactions</div>
+      <button class="gmail-sheet-close" onclick="closeGmailSheet()">✕</button>
+    </div>
+    <div class="gmail-sheet-body" id="gmail-txn-list"></div>
+    <button class="gmail-apply-btn" onclick="applyGmailTransactions()">Apply to Milestones →</button>
+  </div>
+</div>
 
 <script>
 // ══════════════════════════════════════════════════════════
@@ -538,8 +606,8 @@ const CATS = [
     cav:'⚠️ 18k pts/month shared cap with flights. Prioritise hotel over flight bookings for cap allocation.',
     alts:[{l:'TravelOne Hopper',r:'50.4%',n:'Fallback if Premier cap hit'},{l:'DCB SmartBuy',r:'33.3%',n:'10X hotels · 10k RP/mo cap'}],
     dynCards:[
-      {id:'premier_h',card:'HSBC Premier Hopper',rate:75.6,note:'36 pts/₹100 → Accor ALL 1:1',cls:'top'},
-      {id:'travelone_h',card:'TravelOne Hopper ⚡',rate:50.4,note:'24 pts/₹100 → Accor ALL 1:1 (18k cap)',cls:'hi'},
+      {id:'premier_h',card:'HSBC Premier Hopper',rate:75.6,note:'36 pts/₹100 → Accor ALL 1:1',cls:'top',ptsRate:36,ptsProg:'Accor pts'},
+      {id:'travelone_h',card:'TravelOne Hopper ⚡',rate:50.4,note:'24 pts/₹100 → Accor ALL 1:1 (18k cap)',cls:'hi',ptsRate:24,ptsProg:'Accor pts'},
       {id:'dcb_sb_h',card:'DCB SmartBuy Hotels',rate:33.3,note:'10X total · 10k RP/mo cap · Accor 2:1',cls:'hi'},
     ]
   },
@@ -549,8 +617,8 @@ const CATS = [
     cav:'Hotels earn 36 pts vs flights 18 pts on same cap — prioritise hotel cap allocation.',
     alts:[{l:'TravelOne Hopper',r:'33.6%',n:'Fallback (⚡ cashback to June)'},{l:'DCB SmartBuy',r:'~10%',n:'5X SmartBuy flights'}],
     dynCards:[
-      {id:'premier_f',card:'HSBC Premier Hopper',rate:37.8,note:'18 pts/₹100 → Accor ALL 1:1',cls:'hi'},
-      {id:'travelone_f',card:'TravelOne Hopper ⚡',rate:33.6,note:'16 pts/₹100 (cashback active)',cls:'hi'},
+      {id:'premier_f',card:'HSBC Premier Hopper',rate:37.8,note:'18 pts/₹100 → Accor ALL 1:1',cls:'hi',ptsRate:18,ptsProg:'Accor pts'},
+      {id:'travelone_f',card:'TravelOne Hopper ⚡',rate:33.6,note:'16 pts/₹100 (cashback active)',cls:'hi',ptsRate:16,ptsProg:'Accor pts'},
       {id:'dcb_sb_f',card:'DCB SmartBuy Flights',rate:10.5,note:'5X total on SmartBuy · Accor 2:1',cls:'md'},
     ]
   },
@@ -560,8 +628,8 @@ const CATS = [
     cav:'Uses Group A cap (30k/yr). Always prefer Premier Hopper portal when booking is possible.',
     alts:[{l:'HSBC Premier Hopper',r:'37.8%',n:'Book via Hopper portal instead if available'}],
     dynCards:[
-      {id:'atlas_a',card:'Axis Atlas',rate:17.7,note:'5 EM/₹100 → KrisFlyer 1:2 (Group A cap)',cls:'md'},
-      {id:'premier_fx',card:'HSBC Premier base',rate:5.1,note:'3 pts/₹100 + 0.99% markup fallback',cls:'lo'},
+      {id:'atlas_a',card:'Axis Atlas',rate:17.7,note:'5 EM/₹100 → KrisFlyer 1:2 (Group A cap)',cls:'md',ptsRate:10,ptsProg:'KrisFlyer miles'},
+      {id:'premier_fx',card:'HSBC Premier base',rate:5.1,note:'3 pts/₹100 + 0.99% markup fallback',cls:'lo',ptsRate:3,ptsProg:'Accor pts'},
     ]
   },
   { id:'gf',  e:'🌍', n:'Generic Forex',       s:'non-travel MCC',     badge:'5.1%', bcls:'cbw', isForex:true,
@@ -596,6 +664,17 @@ const CATS = [
       {id:'premier_kl',card:'HSBC Premier base',rate:5.1,note:'Base rate only on MCC 4722',cls:'lo'},
     ]
   },
+  { id:'hd',  e:'🛎️', n:'Hotel Direct',       s:'marriott.com, accor.com, hyatt.com', badge:'16%', bcls:'cbw', isForex:false,
+    best:'Axis Atlas', bsub:'5 EM/₹100 hotel MCC → KrisFlyer 1:2', rv:16, rc:'nb',
+    why:'Direct hotel website bookings (not via Hopper/SmartBuy portal). Axis Atlas earns 5 EM/₹100 on hotel MCCs → KrisFlyer 1:2 = 10 miles at ₹1.6 CPP = 16% gross. Use when portal unavailable.',
+    cav:'Always prefer HSBC Premier Hopper portal (75.6%) when possible. Axis Group A cap 30k/yr — prioritise J/F class awards.',
+    alts:[{l:'HSBC Premier base',r:'6.3%',n:'3 pts/₹100 → Accor ALL 1:1 at ₹2.1'},{l:'Amex Plat Charge (FHR)',r:'~7.12%',n:'Fine Hotels & Resorts: free breakfast + room upgrade'}],
+    dynCards:[
+      {id:'atlas_hd',card:'Axis Atlas',rate:16,note:'5 EM/₹100 on hotel MCC → KrisFlyer 1:2 (Group A)',cls:'hi',ptsRate:10,ptsProg:'KrisFlyer miles'},
+      {id:'amex_fhr',card:'Amex Plat Charge (FHR)',rate:7.12,note:'Fine Hotels & Resorts: breakfast + upgrade + late checkout',cls:'md'},
+      {id:'premier_hd',card:'HSBC Premier base',rate:6.3,note:'3 pts/₹100 → Accor ALL 1:1 (no Hopper on direct)',cls:'lo',ptsRate:3,ptsProg:'Accor pts'},
+    ]
+  },
   { id:'is',  e:'🛒', n:'INR Shopping',        s:'Amazon, SmartBuy',   badge:'', bcls:'', isForex:false,
     best:'DCB SmartBuy', bsub:'3.33 RP/₹100 + milestone boost', rv:0, rc:'ng',
     why:'Best all-round INR earner. SmartBuy portal gives higher multiples. Quarterly ₹4L → 10k RP milestone currently boosting effective rate.',
@@ -623,31 +702,31 @@ const CATS = [
 // CARDS DATA
 // ══════════════════════════════════════════════════════════
 const CARDS = [
-  { id:'pr', name:'HSBC Premier', iss:'HSBC India · Mastercard', isPrimary:true, grad:'linear-gradient(135deg,#0C4A6E,#0284C7)',
+  { id:'pr', name:'HSBC Premier', iss:'HSBC India · Mastercard', isPrimary:true, network:'mc', img:'', grad:'linear-gradient(135deg,#0C4A6E,#0284C7)',
     tags:[['PRIMARY · LIVE','tl'],['0.99% Forex','tg'],['36X Hopper Hotels','tb'],['18X Hopper Flights','tb']],
     earn:[{c:'Hopper Hotels (replaces base)',r:'36 pts',u:'/₹100'},{c:'Hopper Flights (replaces base)',r:'18 pts',u:'/₹100'},{c:'Forex Base',r:'3 pts',u:'/₹100'}],
     info:`<span class="ig">● NOW LIVE — Primary travel card</span><br><br><span class="ia">Forex markup: 0.99%</span> (~1.167% with GST) — lowest in stack<br><br>Transfer partners 1:1: Accor ALL · Air India · Qatar Privilege Club<br><br>Hopper cap: 18,000 pts/month shared (hotels + flights)<br><br><span class="io">⚠️</span> Utilities/tax/insurance/e-wallets → ₹1L/month cumulative cap<br><br>Confirm with RM if TravelOne pts merge into Premier pool before downgrade.`},
-  { id:'aa', name:'Axis Atlas', iss:'Axis Bank · Visa', grad:'linear-gradient(135deg,#1E3A8A,#6D28D9)',
+  { id:'aa', name:'Axis Atlas', iss:'Axis Bank · Visa', network:'visa', img:'', grad:'linear-gradient(135deg,#1E3A8A,#6D28D9)',
     tags:[['5X Travel','tb'],['2X Online','tb'],['Group A 30k/yr','to'],['4.13% Forex','tr']],
     earn:[{c:'Airlines & Hotels (direct MCC)',r:'5 EM',u:'/₹100'},{c:'Online Spends',r:'2 EM',u:'/₹100'},{c:'All Other',r:'1 EM',u:'/₹100'}],
     info:`Transfer partners (post-April 2, 2026):<br>• SQ KrisFlyer 1:2 <span style="background:var(--goldd);color:var(--gold);font-size:10px;padding:1px 5px;border-radius:3px">Group A</span><br>• Qantas 1:2 <span style="background:var(--goldd);color:var(--gold);font-size:10px;padding:1px 5px;border-radius:3px">Group A</span><br>• Air India 1:1 · ITC→Marriott (Group B) · JAL (last resort)<br><br><span class="iw">REMOVED:</span> Accor ALL, Marriott direct, Qatar, BA (devalued 2:1)<br><br><strong>Group A deploy deadline: Dec 31, 2026</strong>`},
-  { id:'dc', name:'Diners Club Black Metal', iss:'HDFC Bank · Diners', grad:'linear-gradient(135deg,#111827,#374151)',
+  { id:'dc', name:'Diners Club Black Metal', iss:'HDFC Bank · Diners', network:'dc', img:'', grad:'linear-gradient(135deg,#111827,#374151)',
     tags:[['10X SmartBuy Hotels','tb'],['Global Valueback','tg'],['₹4L Quarterly','to']],
     earn:[{c:'All Spends (base)',r:'3.33 RP',u:'/₹100 (5 RP/₹150)'},{c:'SmartBuy Hotels',r:'10X total',u:'⚠️ 10k RP/mo cap'},{c:'SmartBuy Flights',r:'5X total',u:''}],
     info:`Hotel bonus cap: 10,000 RP/mo (~₹33,333 hotel spend)<br><br>Global Valueback: 1% forex cashback → 1.36% net forex cost<br><br>Milestones: Quarterly ₹4L → 10k RP | Annual ₹8L → fee waiver<br><br><span class="ig">Finnair chain:</span> DCB → Finnair 1:1 → BA Avios 1:1 → Qatar 1:1 (all instant, same-day)`},
-  { id:'to', name:'HSBC TravelOne', iss:'HSBC India · Mastercard', grad:'linear-gradient(135deg,#881337,#C2410C)',
+  { id:'to', name:'HSBC TravelOne', iss:'HSBC India · Mastercard', network:'mc', img:'', grad:'linear-gradient(135deg,#881337,#C2410C)',
     tags:[['Hopper 24X Hotels','tb'],['1:1 Accor ALL','tg'],['⚡ Cashback June','to'],['Review Aug 2026','tr']],
     earn:[{c:'Hopper Hotels (replaces base)',r:'24 pts',u:'/₹100'},{c:'Hopper Flights (replaces base)',r:'16 pts',u:'/₹100'},{c:'Base',r:'4 pts',u:'/₹100'}],
     info:`Hopper cap: 18,000 pts/month shared<br><br><span class="io">⚡ 3.5% forex cashback expires June 2026</span><br><br>MCC: Klook=4722 ✅ · GetYourGuide=7991 ❌ (base only)<br><br><span class="iw">⚠️ Renewal: August 2026.</span> With Premier live, evaluate closure. Confirm TravelOne pts merge with RM.`},
-  { id:'ap', name:'Amex Platinum Charge', iss:'American Express', grad:'linear-gradient(135deg,#1F2937,#4B5563)',
+  { id:'ap', name:'Amex Platinum Charge', iss:'American Express', network:'amex', img:'', grad:'linear-gradient(135deg,#1F2937,#4B5563)',
     tags:[['3X MR Intl','tb'],['Xcelerator 20X','to'],['FHR Hotels','to']],
     earn:[{c:'International base',r:'3X MR',u:'/₹40'},{c:'Xcelerator – Darveys',r:'20X MR',u:''},{c:'Xcelerator – Tata CLiQ Luxury',r:'10X MR',u:''},{c:'Reward Multiplier portal',r:'up to 5X',u:'⚠️ 25k cap/mo'}],
     info:`Best for: MCC 7991 (GetYourGuide) ~7.12% net<br><br>Fine Hotels & Resorts: Free breakfast, late checkout, upgrades<br><br>Transfer: Marriott · KrisFlyer · BA Avios · AsiaMiles · Air India<br><br><span class="iw">Cash withdrawal suspended in India.</span> 4.13% forex markup.`},
-  { id:'pt', name:'Amex Platinum Travel', iss:'American Express', grad:'linear-gradient(135deg,#78350F,#B45309)',
+  { id:'pt', name:'Amex Platinum Travel', iss:'American Express', network:'amex', img:'', grad:'linear-gradient(135deg,#78350F,#B45309)',
     tags:[['₹1.9L Milestone','tb'],['₹7L Taj Voucher','to'],['Auto-credited','tg']],
     earn:[{c:'All Spends',r:'MR Points',u:'standard earn'}],
     info:`Milestones (post-March 9, 2026): ₹1.9L · ₹4L · ₹7L (Taj voucher) — all auto-credited<br><br>See 🎯 Miles tab for live milestone tracking and effective return calculation.`},
-  { id:'mr', name:'Amex MRCC', iss:'American Express', grad:'linear-gradient(135deg,#1E3A8A,#2563EB)',
+  { id:'mr', name:'Amex MRCC', iss:'American Express', network:'amex', img:'', grad:'linear-gradient(135deg,#1E3A8A,#2563EB)',
     tags:[['10 MR/₹100 portal','tp'],['Monthly Bonus','tg']],
     earn:[{c:'Reward Multiplier Portal',r:'10 MR',u:'/₹100 (25k cap/mo)'},{c:'Base',r:'1 MR',u:'/₹50'}],
     info:`Best use: All Reward Multiplier portal spend → 10 MR/₹100 = ~₹1.5/₹100 at ₹1.5 CPP<br><br>Rules: No tab-switching · Full payment via Amex · 25k bonus MR/mo cap shared with Plat Charge<br><br>Monthly bonus: 4× transactions ≥ ₹1,500 → 1,000 bonus MR (= ₹1,500). See 🎯 Miles tab.`},
@@ -765,6 +844,10 @@ function renderDyn(catId, amt){
   rows.forEach((r,i)=>{
     const cls = i===0 ? 'top' : r.cls||'lo';
     const pctStr = r.special || (r.rate>0 ? r.rate.toFixed(1)+'%' : '—');
+    const rupeeVal = r.rate>0 ? Math.round(r.rate/100*amt) : 0;
+    const ptsEarned = r.ptsRate ? Math.round(r.ptsRate*amt/100) : null;
+    const topVal = ptsEarned ? `${ptsEarned.toLocaleString('en-IN')} ${r.ptsProg}` : pctStr;
+    const subVal = ptsEarned ? `${pctStr} · ₹${rupeeVal.toLocaleString('en-IN')}` : (rupeeVal>0?`₹${rupeeVal.toLocaleString('en-IN')}`:'');
     rhtml += `<div class="rec-row${i===0?' winner':''}">
       <div class="rec-rank">${i===1?'②':i===2?'③':i===3?'④':'①'}</div>
       <div class="rec-info">
@@ -772,7 +855,10 @@ function renderDyn(catId, amt){
         <div class="rec-note">${r.note}</div>
         ${(r.boost||0)>0&&r.boostNote?`<div class="rec-boost">⚡ ${r.boostNote}</div>`:''}
       </div>
-      <div class="rec-rate"><div class="rec-pct ${cls}">${pctStr}</div></div>
+      <div class="rec-rate">
+        <div class="rec-pct ${cls}" style="${ptsEarned?'font-size:13px;line-height:1.2':''}">${topVal}</div>
+        ${subVal?`<div class="rec-pts">${subVal}</div>`:''}
+      </div>
     </div>`;
   });
   rhtml += '</div>';
@@ -792,6 +878,14 @@ function buildMiles(){
   const el=document.getElementById('screen-miles');
   let h=`<div class="stitle">Milestones</div>`;
   h+=`<div class="notice n-gold">⚡ DCB quarterly cycle ends June 30 — ${daysLeft('2026-06-30')} days left. Effective rate = ${(MS_DEFS[0].baseRate + msBoost(MS_DEFS[0])).toFixed(1)}% on remaining spend.</div>`;
+  h+=`<button class="gmail-scan-btn" onclick="scanGmail()">
+    <span class="gmail-scan-icon">📧</span>
+    <div class="gmail-scan-text">
+      <div class="gmail-scan-title">Scan Gmail for Transactions</div>
+      <div class="gmail-scan-sub" id="gmail-scan-sub">Last 90 days · Auto-categorise spend</div>
+    </div>
+    <span style="color:var(--muted);font-size:18px">›</span>
+  </button>`;
 
   MS_DEFS.forEach(def => {
     h += renderMsCard(def);
@@ -937,6 +1031,12 @@ function txnPip(id, count){
 // ══════════════════════════════════════════════════════════
 // CARDS TAB
 // ══════════════════════════════════════════════════════════
+const NET_SVG={
+  mc:`<svg width="28" height="18" viewBox="0 0 28 18"><circle cx="10" cy="9" r="9" fill="#EB001B" opacity=".9"/><circle cx="18" cy="9" r="9" fill="#F79E1B" opacity=".85"/></svg>`,
+  visa:`<svg width="38" height="12" viewBox="0 0 38 12"><text x="0" y="11" font-family="Arial Black,sans-serif" font-size="12" font-weight="900" letter-spacing="1" fill="rgba(255,255,255,.9)">VISA</text></svg>`,
+  amex:`<svg width="32" height="20" viewBox="0 0 32 20"><rect width="32" height="20" rx="3" fill="rgba(0,80,160,.55)"/><text x="16" y="14" font-family="Arial,sans-serif" font-size="8.5" font-weight="800" fill="white" text-anchor="middle">AMEX</text></svg>`,
+  dc:`<svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="9.5" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="1.5"/><ellipse cx="7.5" cy="10" rx="3.5" ry="5" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1"/><ellipse cx="12.5" cy="10" rx="3.5" ry="5" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1"/></svg>`,
+};
 function buildCards(){
   const el=document.getElementById('screen-cards');
   let h=`<div class="stitle">Your Stack</div>`;
@@ -944,8 +1044,15 @@ function buildCards(){
     const tags=card.tags.map(([t,c])=>`<span class="tag ${c}">${t}</span>`).join('');
     const earns=card.earn.map(e=>`<div class="erow"><span class="ecat">${e.c}</span><span class="erate">${e.r}</span><span class="eunit">${e.u}</span></div>`).join('');
     const prim=card.isPrimary?`<div class="primary-badge">● Primary Travel Card</div>`:'';
+    const netSvg=NET_SVG[card.network]||'';
     h+=`<div class="gcard"><div class="ccard-row" onclick="togcard('${card.id}')">
-      <div class="ccard-art" style="background:${card.grad}"><div class="ccard-art-inner"><div class="ccard-chip"></div><div><div class="ccard-label">${card.name.toUpperCase()}</div><div class="ccard-iss">${card.iss.split('·')[0].trim()}</div></div></div></div>
+      <div class="ccard-art" style="background:${card.grad}">
+        ${card.img?`<img class="ccard-img" src="${card.img}" alt="" onerror="this.style.display='none'">`:''}
+        <div class="ccard-art-inner">
+          <div class="ccard-chip-row"><div class="ccard-chip"></div><div class="ccard-net">${netSvg}</div></div>
+          <div><div class="ccard-label">${card.name.toUpperCase()}</div><div class="ccard-iss">${card.iss.split('·')[0].trim()}</div></div>
+        </div>
+      </div>
       <div class="ctext"><div class="cname">${card.name}</div><div class="ciss">${card.iss}</div></div>
       <span class="cchev" id="cv-${card.id}">›</span>
     </div>
@@ -1033,9 +1140,20 @@ function reply(q){
   return `<strong>Quick routing (May 2026):</strong><br><br>🏨 Portal hotels → Premier Hopper (75.6%)<br>✈️ Portal flights → Premier Hopper (37.8%)<br>🛒 INR spend → DCB Metal (~${msEffRate(MS_DEFS[0]).rate.toFixed(1)}% with milestone)<br>🌍 Generic forex → Premier (~5.1%)<br>🎪 GetYourGuide → Amex Plat Charge<br>🎫 Klook → TravelOne (⚡ till June)<br>🏧 ATM → IDFC WOW<br><br>Check 🎯 Miles tab for live milestone rates.`;
 }
 let chatInited=false;
+let chatHistory=[];
 function buildChat(){
   if(chatInited) return;
   chatInited=true;
+  // Add key button to chat header
+  const hd=document.querySelector('.chat-panel-hd');
+  if(hd){
+    const kb=document.createElement('button');
+    kb.className='key-icon-btn';
+    kb.title='Set Anthropic API key';
+    kb.innerHTML='🔑';
+    kb.onclick=()=>showApiModal('ciq_anthropic_key','Anthropic API Key','Enter your key from console.anthropic.com to enable AI chat (claude-haiku-4-5). Stored locally on device only.','sk-ant-…',null);
+    hd.insertBefore(kb, hd.querySelector('.chat-close'));
+  }
   // Add quick chips above the message list
   const cl=document.getElementById('cl');
   const chipDiv=document.createElement('div');
@@ -1043,7 +1161,8 @@ function buildChat(){
   chipDiv.style.cssText='display:flex;gap:7px;overflow-x:auto;padding:4px 0 8px;flex-shrink:0;margin-bottom:4px';
   chipDiv.innerHTML=CHIPS.map(c=>`<button class="chip" onclick="chipq('${c}')">${c}</button>`).join('');
   cl.before(chipDiv);
-  botmsg("Hey Romil 👋 DCB quarterly is at "+lakhs(MS.dcb_q)+" ("+msEffRate(MS_DEFS[0]).rate.toFixed(1)+"% effective with milestone). Ask me about routing, MCCs, caps, or transfer chains.");
+  const hasKey=!!localStorage.getItem('ciq_anthropic_key');
+  botmsg("Hey Romil 👋 DCB quarterly is at "+lakhs(MS.dcb_q)+" ("+msEffRate(MS_DEFS[0]).rate.toFixed(1)+"% effective with milestone). "+(hasKey?"Ask me anything — AI powered.":"Ask me about routing, MCCs, caps, or transfer chains. Tap 🔑 to add your API key for AI answers."));
 }
 function chipq(t){document.getElementById('ci').value=t;send()}
 function botmsg(text,typing=false){
@@ -1057,10 +1176,23 @@ function usermsg(text){
   d.innerHTML=`<div class="mbub">${text}</div><div class="mtime">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;
   cl.appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'});
 }
-function send(){
+async function send(){
   const inp=document.getElementById('ci'),text=inp.value.trim();if(!text)return;
   inp.value='';inp.style.height='auto';usermsg(text);
-  const t=botmsg('',true);setTimeout(()=>{t.remove();botmsg(reply(text))},600+Math.random()*300);
+  const apiKey=localStorage.getItem('ciq_anthropic_key');
+  if(!apiKey){
+    const t=botmsg('',true);
+    setTimeout(()=>{t.remove();botmsg('Tap 🔑 above to add your Anthropic API key for AI answers.<br><br>Cached: '+reply(text));},400);
+    return;
+  }
+  const t=botmsg('',true);
+  try{
+    const resp=await callClaude(text);
+    t.remove();botmsg(resp);
+  }catch(err){
+    t.remove();
+    botmsg('⚠️ '+err.message+'<br><br>Cached: '+reply(text));
+  }
 }
 // ══════════════════════════════════════════════════════════
 // NEWS DATA
@@ -1139,6 +1271,7 @@ const PROGRAMS = [
     short:'MAHARAJA CLUB',
     emoji:'🇮🇳',
     bg:'linear-gradient(135deg,#8B0000 0%,#C41E3A 100%)',
+    logo:'https://logo.clearbit.com/airindia.com',
     status:'Platinum',
     statusBg:'rgba(167,139,250,.2)',statusTxt:'var(--purple)',
     // Progress: Platinum is the top tier. Maintain with 60 flights or 45k tier points/yr.
@@ -1156,6 +1289,7 @@ const PROGRAMS = [
     short:'ALL – ACCOR LIVE LIMITLESS',
     emoji:'🏨',
     bg:'linear-gradient(135deg,#1A0533 0%,#7B2D8B 100%)',
+    logo:'https://logo.clearbit.com/accor.com',
     status:'Gold',
     statusBg:'rgba(251,191,36,.18)',statusTxt:'var(--gold)',
     prog:[{label:'Progress to Platinum',cur:30,target:60,unit:'nights',color:'var(--purple)',note:'Platinum = 60 elite nights or 14,000 status pts/yr'}],
@@ -1173,6 +1307,7 @@ const PROGRAMS = [
     short:'BONVOY',
     emoji:'🏩',
     bg:'linear-gradient(135deg,#660000 0%,#A52020 100%)',
+    logo:'https://logo.clearbit.com/marriott.com',
     status:'Titanium Elite',
     statusBg:'rgba(251,146,60,.18)',statusTxt:'var(--amber)',
     prog:[{label:'Progress to Ambassador',cur:75,target:100,unit:'nights',color:'var(--amber)',note:'Ambassador = 100 nights + $23,000 spend'},{label:'Annual Spend (Ambassador)',cur:0,target:23000,unit:'USD',color:'var(--gold)',note:'Both nights AND spend required'}],
@@ -1190,6 +1325,7 @@ const PROGRAMS = [
     short:'KRISFLYER',
     emoji:'🇸🇬',
     bg:'linear-gradient(135deg,#003087 0%,#0055A5 100%)',
+    logo:'https://logo.clearbit.com/singaporeair.com',
     status:'Member',
     statusBg:'rgba(56,189,248,.15)',statusTxt:'var(--accent)',
     prog:[{label:'To Elite Silver',cur:0,target:25000,unit:'Elite miles',color:'var(--accent)',note:'Elite Silver: 25k Elite miles/12 months'}],
@@ -1206,6 +1342,7 @@ const PROGRAMS = [
     short:'AVIOS',
     emoji:'🇬🇧',
     bg:'linear-gradient(135deg,#003580 0%,#075AAA 100%)',
+    logo:'https://logo.clearbit.com/britishairways.com',
     status:'Member',
     statusBg:'rgba(56,189,248,.15)',statusTxt:'var(--accent)',
     prog:[{label:'Tier Points (to Silver)',cur:0,target:600,unit:'tier pts',color:'var(--accent)',note:'BA Silver: 600 tier points/yr'}],
@@ -1222,6 +1359,7 @@ const PROGRAMS = [
     short:'PRIVILEGE CLUB',
     emoji:'🇶🇦',
     bg:'linear-gradient(135deg,#5C0632 0%,#8B0041 100%)',
+    logo:'https://logo.clearbit.com/qatarairways.com',
     status:'Member',
     statusBg:'rgba(251,191,36,.15)',statusTxt:'var(--gold)',
     prog:[{label:'Qpoints (to Silver)',cur:0,target:150,unit:'Qpoints',color:'var(--gold)',note:'Silver: 150 Qpoints/12 months'}],
@@ -1238,6 +1376,7 @@ const PROGRAMS = [
     short:'FINNAIR PLUS',
     emoji:'🇫🇮',
     bg:'linear-gradient(135deg,#003580 0%,#00559E 100%)',
+    logo:'https://logo.clearbit.com/finnair.com',
     status:'Member',
     statusBg:'rgba(56,189,248,.12)',statusTxt:'var(--accent)',
     prog:[],
@@ -1350,6 +1489,7 @@ function renderLoyCard(p){
         <div><div class="lcard-name">${p.name}</div><div class="lcard-short">${p.short}</div></div>
         <div class="lcard-status-badge" style="background:${p.statusBg};color:${p.statusTxt}">${p.status}</div>
       </div>
+      ${p.logo?`<img class="lcard-logo" src="${p.logo}" alt="" onerror="this.style.display='none'">`:''}
     </div>
     <div class="lcard-body" id="lb-${p.id}">
       <div class="lcard-top">
@@ -1433,6 +1573,241 @@ function updateLoyProg(id,idx,val){
   if(bars[idx]) bars[idx].style.width=pct+'%';
   const pcts=document.querySelectorAll(`#lc-${id} .tier-pct`);
   if(pcts[idx]) pcts[idx].textContent=pct.toFixed(0)+'%';
+}
+
+// ══════════════════════════════════════════════════════════
+// API KEY MODAL
+// ══════════════════════════════════════════════════════════
+let _apiModalCb=null;
+function showApiModal(lsKey,title,desc,placeholder,cb){
+  document.getElementById('am-title').textContent=title;
+  document.getElementById('am-desc').textContent=desc;
+  const inp=document.getElementById('am-input');
+  inp.placeholder=placeholder;
+  inp.type=lsKey==='ciq_anthropic_key'?'password':'text';
+  inp.value=localStorage.getItem(lsKey)||'';
+  _apiModalCb=(val)=>{ localStorage.setItem(lsKey,val); if(cb) cb(val); };
+  document.getElementById('apimodal-bg').classList.add('on');
+  setTimeout(()=>inp.focus(),100);
+}
+function saveApiModal(){
+  const val=document.getElementById('am-input').value.trim();
+  if(val&&_apiModalCb) _apiModalCb(val);
+  closeApiModal();
+}
+function closeApiModal(){
+  document.getElementById('apimodal-bg').classList.remove('on');
+  _apiModalCb=null;
+}
+document.getElementById('am-input').addEventListener('keydown',e=>{if(e.key==='Enter')saveApiModal();});
+
+// ══════════════════════════════════════════════════════════
+// CLAUDE API
+// ══════════════════════════════════════════════════════════
+function buildSystemPrompt(){
+  const msSnap=MS_DEFS.map(d=>{
+    const e=msEffRate(d),rem=msRemaining(d);
+    return d.type==='transaction'
+      ?`${d.card} ${d.name}: ${MS[d.id]}/4 txns, ${e.done?'DONE':e.rate.toFixed(0)+'% eff'}`
+      :`${d.card} ${d.name}: ${lakhs(MS[d.id])}/${lakhs(d.threshold)}, ${rem>0?lakhs(rem)+' left':'DONE'}, ${e.rate.toFixed(1)}% eff`;
+  }).join(' | ');
+  return `You are CardIQ, a credit card strategy assistant for Romil's Indian wallet. Be concise and specific.
+
+CARDS: HSBC Premier (36X Hopper hotels=75.6% | 18X flights=37.8% | 3pts base | 0.99% FX | 18k pts/mo cap | Accor/AI/Qatar 1:1) · Axis Atlas (5 EM/₹100 hotel+airline MCCs | KrisFlyer 1:2 | 30k Group A/yr | 2 EM online | 4.13% FX) · DCB Metal HDFC Diners (3.33 RP/₹100 base | 10X SmartBuy hotels | Accor 2:1 | ₹4L quarterly milestone | Finnair 1:1 chain) · HSBC TravelOne (24X Hopper hotels=50.4% | 3.5% FX cashback EXPIRES June 2026) · Amex Plat Charge (3X MR intl | FHR hotels | best for MCC 7991 GetYourGuide) · Amex Plat Travel (₹1.9L/₹4L/₹7L milestones) · Amex MRCC (10 MR/₹100 Reward Multiplier portal | 4 txns ≥₹1.5k = 1000 bonus MR/mo) · IDFC WOW (overseas ATM only | 0% FX)
+
+VALUATIONS: Accor ALL ₹2.1/pt · KrisFlyer ₹1.6 CPP · Amex MR ₹1.5 CPP · Marriott ₹0.8 CPP
+
+MILESTONES (live state): ${msSnap}
+
+LOYALTY: Accor ALL Gold (30/60 nights to Platinum) · Marriott Titanium Elite (75/100 nights, valid Feb 2028) · Air India Maharaja Platinum · KrisFlyer Member · BA Avios Member · Qatar Privilege Member · Finnair Plus
+
+TOP ROUTES: Portal hotels→Premier Hopper (75.6%) · Portal flights→Premier Hopper (37.8%) · INR spends→DCB+milestone · Forex generic→Premier (5.1%) · GetYourGuide (MCC 7991)→Amex Plat · Klook (MCC 4722)→TravelOne till June · Direct airline/hotel MCC→Axis Atlas · Overseas ATM→IDFC WOW
+
+Use web_search for current offers, news, or promotions. Answer in 2-4 short paragraphs max. Use HTML bold tags for key numbers.`;
+}
+
+async function callClaude(userMsg){
+  const key=localStorage.getItem('ciq_anthropic_key');
+  if(!key) throw new Error('No API key — tap 🔑 to add');
+  chatHistory.push({role:'user',content:userMsg});
+  const makeBody=(withSearch)=>({
+    model:'claude-haiku-4-5-20251001',
+    max_tokens:1024,
+    system:buildSystemPrompt(),
+    ...(withSearch?{tools:[{type:'web_search_20250305',name:'web_search'}]}:{}),
+    messages:chatHistory.slice(-12)
+  });
+  const doReq=async(body)=>{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify(body)
+    });
+    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`API ${r.status}`);}
+    return r.json();
+  };
+  let data=await doReq(makeBody(true));
+  if(data.stop_reason==='tool_use') data=await doReq(makeBody(false));
+  const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('')||'…';
+  chatHistory.push({role:'assistant',content:text});
+  return text;
+}
+
+// ══════════════════════════════════════════════════════════
+// GMAIL INTEGRATION
+// ══════════════════════════════════════════════════════════
+let _gmailTxns=[];
+let _gsiLoaded=false;
+let _tokenClient=null;
+
+function scanGmail(){
+  const clientId=localStorage.getItem('ciq_google_client_id');
+  if(!clientId){
+    showApiModal('ciq_google_client_id','Google Client ID',
+      'Create an OAuth 2.0 Client ID at console.cloud.google.com → APIs & Services → Credentials. Enable Gmail API. Add your domain/localhost as authorised origin.',
+      'your-client-id.apps.googleusercontent.com',
+      ()=>scanGmail());
+    return;
+  }
+  if(!_gsiLoaded||!window.google?.accounts?.oauth2){
+    const sub=document.getElementById('gmail-scan-sub');
+    if(sub) sub.textContent='Loading Google auth…';
+    const s=document.createElement('script');
+    s.src='https://accounts.google.com/gsi/client';
+    s.onload=()=>{ _gsiLoaded=true; _initTokenClient(clientId); };
+    s.onerror=()=>{ if(sub) sub.textContent='Failed to load Google auth'; };
+    document.head.appendChild(s);
+    return;
+  }
+  _initTokenClient(clientId);
+}
+
+function _initTokenClient(clientId){
+  _tokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:clientId,
+    scope:'https://www.googleapis.com/auth/gmail.readonly',
+    callback:_handleGToken
+  });
+  _tokenClient.requestAccessToken({prompt:''});
+}
+
+async function _handleGToken(resp){
+  const sub=document.getElementById('gmail-scan-sub');
+  if(resp.error){ if(sub) sub.textContent='Sign-in failed: '+resp.error; return; }
+  if(sub) sub.textContent='Scanning…';
+  try{
+    await _fetchGmail(resp.access_token);
+  }catch(e){
+    if(sub) sub.textContent='Scan error: '+e.message;
+  }
+}
+
+async function _fetchGmail(token){
+  const q=encodeURIComponent('(from:(alerts@hdfcbank.net OR infoindia@americanexpress.com OR alerts@axisbank.com OR notify@alerts.hsbc.co.in OR alerts@hsbc.co.in OR txnalert@axisbank.com) OR subject:(spent on your OR debit alert OR credit card transaction)) newer_than:90d');
+  const listR=await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${q}&maxResults=75`,{headers:{Authorization:`Bearer ${token}`}});
+  if(!listR.ok) throw new Error('Gmail API '+listR.status+' — check Client ID & scopes');
+  const list=await listR.json();
+  const msgs=list.messages||[];
+  const sub=document.getElementById('gmail-scan-sub');
+  if(!msgs.length){ if(sub) sub.textContent='No transaction emails found'; return; }
+  if(sub) sub.textContent=`Fetching ${msgs.length} emails…`;
+  const details=await Promise.all(msgs.slice(0,60).map(m=>
+    fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`,
+      {headers:{Authorization:`Bearer ${token}`}}).then(r=>r.json())
+  ));
+  _gmailTxns=_parseTxns(details);
+  if(sub) sub.textContent=`Found ${_gmailTxns.length} transactions`;
+  _showGmailSheet(_gmailTxns);
+}
+
+function _parseTxns(emails){
+  const out=[];
+  for(const e of emails){
+    if(!e.payload) continue;
+    const hdr=Object.fromEntries((e.payload.headers||[]).map(h=>[h.name,h.value]));
+    const subj=hdr.Subject||'', from=hdr.From||'', dateStr=hdr.Date||'';
+    const txn=_parseLine(subj,from,new Date(dateStr));
+    if(txn) out.push(txn);
+  }
+  return out.sort((a,b)=>b.date-a.date);
+}
+
+function _parseLine(subj,from,date){
+  // Match Indian bank alert patterns
+  const amtM=subj.match(/(?:INR|Rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)/i);
+  if(!amtM) return null;
+  const amount=parseFloat(amtM[1].replace(/,/g,''));
+  if(!amount||amount<1||amount>10000000) return null;
+
+  const src=(from+' '+subj).toLowerCase();
+  let card='',cardId='',cardShort='';
+  if(/hdfc|diners|dcb/.test(src)){card='DCB Metal';cardId='dcb_q';cardShort='DCB';}
+  else if(/mrcc|membership reward/.test(src)){card='Amex MRCC';cardId='mrcc_mo';cardShort='MRCC';}
+  else if(/amex|american express|platinum travel/.test(src)){card='Amex Plat Travel';cardId='amex_pt1';cardShort='Amex PT';}
+  else if(/amex|american express/.test(src)){card='Amex';cardId='';cardShort='Amex';}
+  else if(/hsbc/.test(src)){card='HSBC';cardId='';cardShort='HSBC';}
+  else if(/axis/.test(src)){card='Axis';cardId='';cardShort='Axis';}
+  else{card='Card';cardId='';cardShort='';}
+
+  const mM=subj.match(/(?:at|merchant[:\s]+|towards)\s+([A-Za-z][A-Za-z0-9\s&'.,-]{2,28}?)(?:\s+on\s+|\s+dated|\s+for\s+|\s*$)/i);
+  const merchant=mM?mM[1].trim():'Unknown';
+  const cat=_inferCat(merchant);
+
+  return {amount,merchant,card,cardId,cardShort,cat,date,sel:true};
+}
+
+function _inferCat(m){
+  const s=m.toLowerCase();
+  if(/marriott|accor|hilton|hyatt|ihg|sheraton|westin|taj|oberoi|itc hotel/.test(s)) return 'Hotel Direct';
+  if(/indigo|air india|spicejet|vistara|airasia|go first/.test(s)) return 'Direct Airline MCC';
+  if(/klook/.test(s)) return 'Klook / Tours';
+  if(/getyourguide/.test(s)) return 'GetYourGuide';
+  if(/amazon|flipkart|myntra|ajio|nykaa|meesho|tata cliq/.test(s)) return 'INR Shopping';
+  if(/swiggy|zomato|dominos|mcdonalds|starbucks|café|restaurant|pizza|biryani/.test(s)) return 'Dining';
+  return 'INR Shopping';
+}
+
+function _showGmailSheet(txns){
+  const list=document.getElementById('gmail-txn-list');
+  if(!txns.length){list.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">No transactions parsed</div>';return;}
+  list.innerHTML=txns.map((t,i)=>`
+    <div class="txn-item${t.sel?' sel':''}" onclick="_toggleTxn(${i})">
+      <div class="txn-check${t.sel?' on':''}">${t.sel?'✓':''}</div>
+      <div class="txn-info">
+        <div class="txn-merchant">${t.merchant}</div>
+        <div class="txn-detail">${t.cardShort||t.card} · ${t.cat} · ${t.date.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div>
+      </div>
+      <div class="txn-amt">₹${t.amount.toLocaleString('en-IN')}</div>
+    </div>`).join('');
+  document.getElementById('gmail-sheet-bg').classList.add('on');
+}
+
+function _toggleTxn(i){
+  _gmailTxns[i].sel=!_gmailTxns[i].sel;
+  _showGmailSheet(_gmailTxns);
+}
+
+function closeGmailSheet(){
+  document.getElementById('gmail-sheet-bg').classList.remove('on');
+}
+
+function applyGmailTransactions(){
+  const sel=_gmailTxns.filter(t=>t.sel&&t.cardId);
+  const totals={};
+  sel.forEach(t=>{
+    if(!totals[t.cardId]) totals[t.cardId]=0;
+    totals[t.cardId]+=t.amount;
+  });
+  Object.entries(totals).forEach(([id,amt])=>{
+    const cur=MS[id]||0;
+    MS[id]=cur+amt;
+    const inp=document.getElementById('msi-'+id);
+    if(inp){inp.value=MS[id];updateMs(id,MS[id]);}
+  });
+  closeGmailSheet();
+  const totalAmt=Object.values(totals).reduce((a,b)=>a+b,0);
+  const sub=document.getElementById('gmail-scan-sub');
+  if(sub) sub.textContent=`Applied ${sel.length} txn${sel.length!==1?'s':''} · ₹${totalAmt.toLocaleString('en-IN')} added`;
 }
 
 // INIT
