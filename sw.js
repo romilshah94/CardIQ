@@ -1,5 +1,5 @@
 // CardIQ service worker — offline app shell, fresh HTML when online
-const VERSION = 'cardiq-v2-2026-11-21';
+const VERSION = 'cardiq-v3-2026-11-21';
 const SHELL = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
