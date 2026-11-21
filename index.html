@@ -2,9 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="CardIQ">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#070714">
+<meta name="description" content="CardIQ — personal credit card routing, milestones and transfer-partner map">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <title>Card IQ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -383,6 +390,91 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;back
 .ccard-net{display:flex;align-items:center}
 /* ── LOYALTY LOGO ── */
 .lcard-logo{position:absolute;bottom:10px;right:14px;height:26px;width:auto;max-width:72px;object-fit:contain;opacity:.88;filter:brightness(0) invert(1);pointer-events:none}
+/* ── ROUTES / TRANSFER GRAPH ── */
+.rt-bar{display:flex;gap:7px;overflow-x:auto;margin-bottom:9px;padding-bottom:2px}
+.rt-bar::-webkit-scrollbar{display:none}
+.rt-f{background:var(--s0);border:1px solid var(--bd);border-radius:16px;padding:7px 13px;font:600 12px 'Syne',sans-serif;color:var(--text2);white-space:nowrap;cursor:pointer;flex-shrink:0}
+.rt-f.on{background:var(--accentd);border-color:var(--accentd2);color:var(--accent)}
+.rt-search-row{display:flex;gap:8px;margin-bottom:10px}
+.rt-search{flex:1;background:var(--s1);border:1px solid var(--bd);border-radius:12px;padding:10px 13px;font:500 16px 'Syne',sans-serif;color:var(--text);outline:none;min-width:0}
+.rt-search::placeholder{color:var(--muted);font-size:14px}
+.rt-reset{width:42px;border-radius:12px;background:var(--s1);border:1px solid var(--bd);color:var(--text2);font-size:18px;cursor:pointer}
+#rt-wrap{position:relative;height:min(62vh,640px);min-height:340px;border:1px solid var(--bd);border-radius:16px;overflow:hidden;background:radial-gradient(ellipse at 50% 50%,rgba(56,189,248,.06),transparent 70%),var(--s0);touch-action:none;margin-bottom:14px;user-select:none;-webkit-user-select:none}
+#rt-svg{width:100%;height:100%;display:block;cursor:grab}
+.rt-e{fill:none;stroke-width:1.6;stroke-opacity:.32;transition:stroke-opacity .2s,stroke-width .2s}
+.rt-e.hop{stroke-dasharray:6 5;stroke-opacity:.45}
+.rt-e.cut{stroke-dasharray:2 4}
+.rt-n{cursor:pointer;transition:opacity .2s}
+.rt-n.air circle{fill:#0E3A55;stroke:#38BDF8;stroke-width:2}
+.rt-n.hotel rect{fill:#2E1F5A;stroke:#A78BFA;stroke-width:2}
+.rt-n.anchor circle,.rt-n.anchor rect{stroke:#FBBF24;stroke-width:3}
+.rt-pl{fill:#C8CEE2;font:600 15px 'Syne',sans-serif;text-anchor:middle;paint-order:stroke;stroke:#070714;stroke-width:4px;stroke-linejoin:round}
+.rt-ct{fill:#fff;font:800 17px 'Syne',sans-serif;text-anchor:middle}
+.rt-cl{fill:#A8B0C8;font:600 13px 'Syne',sans-serif;text-anchor:middle;paint-order:stroke;stroke:#070714;stroke-width:4px}
+#rt-svg.has-sel .rt-e{stroke-opacity:.05}
+#rt-svg.has-sel .rt-n{opacity:.18}
+#rt-svg.has-sel .rt-e.hl{stroke-opacity:.95;stroke-width:3}
+#rt-svg.has-sel .rt-n.hl{opacity:1}
+.rt-n.focus circle,.rt-n.focus rect{stroke:#fff;stroke-width:4}
+.rt-lb rect{fill:#0B0B1E;stroke-width:1.5}
+.rt-lb text{fill:#fff;font:700 13px 'JetBrains Mono',monospace;text-anchor:middle}
+.rt-legend{position:absolute;left:8px;bottom:8px;display:flex;flex-wrap:wrap;gap:8px;font-size:10.5px;color:var(--text2);background:rgba(7,7,20,.75);padding:5px 9px;border-radius:10px;pointer-events:none}
+.rt-legend i{display:inline-block;width:10px;height:3px;border-radius:2px;margin-right:4px;vertical-align:middle}
+.rt-legend i.dash{background:repeating-linear-gradient(90deg,#FBBF24 0 4px,transparent 4px 7px)}
+.rt-hint{position:absolute;right:8px;top:8px;font-size:10.5px;color:var(--muted);background:rgba(7,7,20,.7);padding:4px 8px;border-radius:8px;pointer-events:none}
+.rt-sec{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.7px;text-transform:uppercase;margin:4px 0 8px}
+.rt-sec span{text-transform:none;letter-spacing:0;font-weight:500;margin-left:6px}
+.rt-sec.in{margin:12px 0 4px}
+.rt-card{background:var(--s0);border:1px solid var(--bd);border-radius:var(--r);padding:10px 12px;margin-bottom:10px}
+.rt-card.sel{border-color:var(--accentd2)}
+.rt-ch{display:flex;align-items:center;gap:8px;cursor:pointer;padding:2px 0 6px}
+.rt-ch b{font-size:14px;font-weight:800}
+.rt-ch small{font-size:11px;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rt-go{color:var(--muted);font-size:16px;padding:0 4px;cursor:pointer}
+.rt-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.rt-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--bd);cursor:pointer}
+.rt-rank{width:18px;font:700 11px 'JetBrains Mono',monospace;color:var(--muted);flex-shrink:0}
+.rt-path{flex:1;display:flex;flex-wrap:wrap;align-items:center;gap:3px;min-width:0;font-size:11.5px}
+.rt-pc{border:1px solid var(--bd2);border-radius:7px;padding:2px 6px;font-weight:700;white-space:nowrap;color:var(--text)}
+.rt-pc.hop{border-color:rgba(251,191,36,.5)}
+.rt-arrow{font:600 10.5px 'JetBrains Mono',monospace;color:var(--accent);white-space:nowrap}
+.rt-arrow em{font-style:normal;color:var(--gold);margin-left:2px}
+.rt-sub{flex-basis:100%;font-size:10.5px;color:var(--muted);margin-top:3px;line-height:1.4}
+.rt-val{text-align:right;flex-shrink:0}
+.rt-val b{display:block;font:700 14px 'JetBrains Mono',monospace;color:var(--green)}
+.rt-val small{font-size:10px;color:var(--muted)}
+.rt-note{font-size:12px;color:var(--text2);line-height:1.5;margin:4px 0 6px}
+.rt-valedit{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--text2);margin:2px 0 6px;flex-wrap:wrap}
+.rt-valedit input{width:72px;background:var(--s1);border:1px solid var(--bd2);border-radius:8px;padding:5px 8px;color:var(--text);font:600 16px 'JetBrains Mono',monospace}
+.rt-foot{font-size:11px;color:var(--muted);line-height:1.5;margin:6px 2px 10px}
+/* ── CHAT UPGRADES ── */
+.chat-hd-btns{display:flex;gap:6px}
+.chat-panel-hd{gap:6px}
+.chat-panel-title{flex:1}
+.chat-model{font:500 10px 'JetBrains Mono',monospace;color:var(--muted);margin-top:2px;letter-spacing:0}
+.key-icon-btn.on{border-color:var(--accent);background:var(--accentd)}
+.chiprow{display:flex;gap:7px;overflow-x:auto;padding:8px 16px 6px;flex-shrink:0}
+.chiprow::-webkit-scrollbar{display:none}
+.chat-status{color:var(--text2);font-size:12.5px}
+.cursor{color:var(--accent);animation:blink 1s steps(2) infinite;margin-left:1px}
+@keyframes blink{50%{opacity:0}}
+.chat-src{margin-top:8px;padding-top:7px;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:3px}
+.chat-src a{font-size:11px;color:var(--accent);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mbub .mdt{border-collapse:collapse;margin:6px 0;font-size:12px;width:100%}
+.mbub .mdt th,.mbub .mdt td{border:1px solid var(--bd2);padding:4px 6px;text-align:left;vertical-align:top}
+.mbub .mdt th{background:var(--s1)}
+.mbub .mdl{margin:4px 0 4px 18px;padding:0}
+.mbub .mdl li{margin:2px 0}
+.mbub .mdh{font-weight:800;margin:6px 0 2px}
+.mbub code{font:12px 'JetBrains Mono',monospace;background:var(--s1);padding:1px 4px;border-radius:4px}
+.mbub .mdpre{font:11.5px 'JetBrains Mono',monospace;background:var(--s1);padding:8px;border-radius:8px;overflow-x:auto;white-space:pre}
+.mbub a{color:var(--accent)}
+.chatinput{font-size:16px}
+/* ── PWA install hint ── */
+.ios-hint{position:fixed;left:12px;right:12px;bottom:calc(var(--nav) + var(--safe-b) + 76px);z-index:160;background:#11122A;border:1px solid var(--accentd2);border-radius:14px;padding:11px 40px 11px 14px;font-size:12.5px;line-height:1.5;color:var(--text2);box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.ios-hint b{color:var(--text)}
+.ios-hint button{position:absolute;right:8px;top:8px;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer}
+@media (min-width:760px){ .screen{max-width:760px;margin:0 auto;left:0;right:0} #rt-wrap{height:min(70vh,760px)} }
 </style>
 </head>
 <body>
@@ -391,13 +483,14 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;back
   <div class="hdr-row">
     <div>
       <div class="wordmark">CARD<em>IQ</em></div>
-      <div class="hdr-sub">Romil · Accor ALL @ ₹2.1/pt</div>
+      <div class="hdr-sub">Romil · data verified 21 Nov 2026</div>
     </div>
   </div>
 </div>
 
 <div class="screens">
   <div class="screen active" id="screen-spend"></div>
+  <div class="screen" id="screen-routes"></div>
   <div class="screen" id="screen-miles"></div>
   <div class="screen" id="screen-cards"></div>
   <div class="screen" id="screen-optimize"></div>
@@ -426,11 +519,12 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;back
 
 <nav class="nav">
   <button class="ntab on" onclick="go('spend',this)"><span class="ntab-icon">⚡</span><span class="ntab-lbl">Spend</span></button>
+  <button class="ntab"    onclick="go('routes',this)"><span class="ntab-icon">🔀</span><span class="ntab-lbl">Routes</span></button>
   <button class="ntab"    onclick="go('miles',this)"><span class="ntab-icon">🎯</span><span class="ntab-lbl">Miles</span></button>
-  <button class="ntab"    onclick="go('news',this)"><span class="ntab-icon">📰</span><span class="ntab-lbl">News</span></button>
-  <button class="ntab"    onclick="go('loyalty',this)"><span class="ntab-icon">🏅</span><span class="ntab-lbl">Loyalty</span></button>
   <button class="ntab"    onclick="go('cards',this)"><span class="ntab-icon">💳</span><span class="ntab-lbl">Cards</span></button>
   <button class="ntab"    onclick="go('optimize',this)"><span class="ntab-icon">📊</span><span class="ntab-lbl">Strategy</span></button>
+  <button class="ntab"    onclick="go('news',this)"><span class="ntab-icon">📰</span><span class="ntab-lbl">News</span></button>
+  <button class="ntab"    onclick="go('loyalty',this)"><span class="ntab-icon">🏅</span><span class="ntab-lbl">Loyalty</span></button>
 </nav>
 
 <!-- API Key / Config Modal -->
@@ -459,109 +553,78 @@ body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;back
 // ══════════════════════════════════════════════════════════
 // MILESTONE DEFINITIONS
 // ══════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════
+// DATA VERSION — refreshed from project memory + web check
+// ══════════════════════════════════════════════════════════
+const DATA_ASOF = '21 Nov 2026';
+const _MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function _ymd(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
+function _qInfo(dt=new Date()){
+  const y=dt.getFullYear(), q=Math.floor(dt.getMonth()/3), last=new Date(y,q*3+3,0).getDate();
+  return { key:`${y}Q${q+1}`, label:`${_MON[q*3]} – ${_MON[q*3+2]} ${y}`, end:_ymd(y,q*3+2,last) };
+}
+function _mInfo(dt=new Date()){
+  const y=dt.getFullYear(), m=dt.getMonth(), last=new Date(y,m+1,0).getDate();
+  return { key:`${y}-${m+1}`, label:`${_MON[m]} ${y}`, end:_ymd(y,m,last) };
+}
+const QTR=_qInfo(), MON=_mInfo();
+
+// ══════════════════════════════════════════════════════════
+// MILESTONE DEFINITIONS
+// ══════════════════════════════════════════════════════════
 const MS_DEFS = [
   {
-    id:'dcb_q',
-    card:'DCB Metal', emoji:'⚫', grad:'linear-gradient(135deg,#111827,#374151)',
-    name:'Quarterly Milestone',
-    period:'Apr – Jun 2026',
-    deadline:'2026-06-30',
-    type:'spend',
-    threshold:400000,       // ₹4L
-    rewardLabel:'10,000 Reward Points',
-    rewardValue:10500,       // 10k RP → Accor 2:1 = 5k × ₹2.1
-    rewardNote:'10k RP → Accor ALL 2:1 = 5,000 pts × ₹2.1',
-    baseRate:3.5,            // % effective on INR (3.33 RP × ₹1.05 CPP)
-    defaultSpend:260000,     // ₹2.6L pre-loaded from your current cycle
-    color:'#A78BFA',
-    urgent:true,
+    id:'dcb_q', card:'DCB Metal', emoji:'⚫', grad:'linear-gradient(135deg,#111827,#374151)',
+    name:'Quarterly Milestone', period:QTR.label, periodKey:QTR.key, deadline:QTR.end,
+    type:'spend', threshold:400000,
+    rewardLabel:'10,000 Reward Points', rewardValue:10000,
+    rewardNote:'10k RP @ ₹1 face (≈₹16k if sent 1:1 to KrisFlyer)',
+    baseRate:3.33, defaultSpend:0, color:'#A78BFA', urgent:true,
   },
   {
-    id:'dcb_yr',
-    card:'DCB Metal', emoji:'⚫', grad:'linear-gradient(135deg,#111827,#374151)',
-    name:'Annual Fee Waiver',
-    period:'FY 2025-26',
-    deadline:'2026-03-31',
-    type:'spend',
-    threshold:800000,        // ₹8L
-    rewardLabel:'Annual Fee Waiver',
-    rewardValue:10000,       // approx DCB Metal annual fee
-    rewardNote:'Waives ~₹10,000 annual fee',
-    baseRate:3.5,
-    defaultSpend:260000,
-    color:'#6D28D9',
+    id:'dcb_yr', card:'DCB Metal', emoji:'⚫', grad:'linear-gradient(135deg,#111827,#374151)',
+    name:'Annual Fee Waiver', period:'Card year (edit if renewal differs)', periodKey:'dcb-fy26-27', deadline:'2027-03-31',
+    type:'spend', threshold:800000,
+    rewardLabel:'Fee waiver', rewardValue:11800, rewardNote:'Waives ₹10,000 + GST',
+    baseRate:3.33, defaultSpend:0, color:'#6D28D9',
   },
   {
-    id:'amex_pt1',
-    card:'Amex Plat Travel', emoji:'🌟', grad:'linear-gradient(135deg,#78350F,#B45309)',
-    name:'Milestone 1',
-    period:'CY 2026',
-    deadline:'2026-12-31',
-    type:'spend',
-    threshold:190000,
-    rewardLabel:'Travel Voucher (est. ₹6,000)',
-    rewardValue:6000,        // estimate — verify with Amex app
-    rewardNote:'Auto-credited travel voucher (~₹6k est.)',
-    baseRate:1.5,
-    defaultSpend:0,
-    color:'#F59E0B',
-    approx:true,
+    id:'amex_pt2', card:'Amex Plat Travel', emoji:'🌟', grad:'linear-gradient(135deg,#78350F,#B45309)',
+    name:'₹4L Milestone', period:'Card year · ₹1.9L tier removed 10 Sep 2026', periodKey:'pt-y1', deadline:'2026-12-31',
+    type:'spend', threshold:400000,
+    rewardLabel:'10,000 MR', rewardValue:7000, rewardNote:'10k MR × ₹0.7',
+    baseRate:1.4, defaultSpend:0, color:'#D97706', approx:true,
   },
   {
-    id:'amex_pt2',
-    card:'Amex Plat Travel', emoji:'🌟', grad:'linear-gradient(135deg,#78350F,#B45309)',
-    name:'Milestone 2',
-    period:'CY 2026',
-    deadline:'2026-12-31',
-    type:'spend',
-    threshold:400000,
-    rewardLabel:'Travel Voucher (est. ₹12,000)',
-    rewardValue:12000,
-    rewardNote:'Auto-credited travel voucher (~₹12k est.)',
-    baseRate:1.5,
-    defaultSpend:0,
-    color:'#D97706',
-    approx:true,
-    prevId:'amex_pt1',
+    id:'amex_pt3', card:'Amex Plat Travel', emoji:'🌟', grad:'linear-gradient(135deg,#78350F,#B45309)',
+    name:'₹7L Milestone — Taj', period:'Card year · 22,500 MR swapped for Taj card', periodKey:'pt-y1', deadline:'2026-12-31',
+    type:'spend', threshold:700000,
+    rewardLabel:'₹20,000 Taj e-gift card', rewardValue:20000, rewardNote:'Counted at face value',
+    baseRate:1.4, defaultSpend:0, color:'#EF4444', approx:true, prevId:'amex_pt2',
   },
   {
-    id:'amex_pt3',
-    card:'Amex Plat Travel', emoji:'🌟', grad:'linear-gradient(135deg,#78350F,#B45309)',
-    name:'Milestone 3 — Taj Voucher',
-    period:'CY 2026',
-    deadline:'2026-12-31',
-    type:'spend',
-    threshold:700000,
-    rewardLabel:'Taj Hotels Voucher (~₹15,000)',
-    rewardValue:15000,
-    rewardNote:'Taj hotel voucher ~₹15k (auto-credited)',
-    baseRate:1.5,
-    defaultSpend:0,
-    color:'#EF4444',
-    approx:true,
-    prevId:'amex_pt2',
+    id:'mrcc_mo', card:'Amex MRCC', emoji:'🎁', grad:'linear-gradient(135deg,#1E3A8A,#2563EB)',
+    name:'4 txns ≥ ₹1,500', period:MON.label, periodKey:MON.key, deadline:MON.end,
+    type:'transaction', threshold:4, txnMin:1500,
+    rewardLabel:'1,000 Bonus MR', rewardValue:700, rewardNote:'1,000 MR × ₹0.7',
+    baseRate:1.4, defaultSpend:0, color:'#60A5FA',
   },
   {
-    id:'mrcc_mo',
-    card:'Amex MRCC', emoji:'🎁', grad:'linear-gradient(135deg,#1E3A8A,#2563EB)',
-    name:'Monthly Bonus (4 txns)',
-    period:'June 2026',
-    deadline:'2026-06-30',
-    type:'transaction',
-    threshold:4,             // 4 transactions ≥ ₹1500
-    txnMin:1500,
-    rewardLabel:'1,000 Bonus MR',
-    rewardValue:1500,        // 1000 MR × ₹1.5 CPP
-    rewardNote:'1,000 bonus MR × ₹1.5 CPP = ₹1,500 value',
-    baseRate:3,              // base MR earn on non-portal
-    defaultSpend:0,          // txns done this month (0-4)
-    color:'#60A5FA',
+    id:'mrcc_20k', card:'Amex MRCC', emoji:'🎁', grad:'linear-gradient(135deg,#1E3A8A,#2563EB)',
+    name:'₹20K Monthly Spend', period:MON.label+' · stacks with 4-txn bonus', periodKey:MON.key, deadline:MON.end,
+    type:'spend', threshold:20000,
+    rewardLabel:'1,000 Bonus MR', rewardValue:700, rewardNote:'Use non-voucher spend — vouchers go to Plat Charge ShopWise',
+    baseRate:1.4, defaultSpend:0, color:'#3B82F6',
   },
 ];
 
-// Live milestone state (user-editable, in-memory)
+// Live milestone state — persisted per period, auto-resets when quarter/month rolls
 const MS = {};
-MS_DEFS.forEach(m => { MS[m.id] = m.type === 'transaction' ? (m.defaultSpend || 0) : (m.defaultSpend || 0); });
+(function(){
+  let saved={}; try{ saved=JSON.parse(localStorage.getItem('ciq_ms')||'{}'); }catch(e){}
+  MS_DEFS.forEach(m=>{ const s=saved[m.id]; MS[m.id]=(s&&s.k===m.periodKey)?s.v:(m.defaultSpend||0); });
+})();
+function saveMS(){ try{ const o={}; MS_DEFS.forEach(m=>o[m.id]={k:m.periodKey,v:MS[m.id]}); localStorage.setItem('ciq_ms',JSON.stringify(o)); }catch(e){} }
 
 // Milestone math
 function msRemaining(def) {
@@ -597,102 +660,145 @@ function daysLeft(deadline) {
 }
 
 // ══════════════════════════════════════════════════════════
-// CATEGORY DATA
+// CATEGORY DATA  (anchors: Accor ₹2.1 · KrisFlyer ₹1.6 · HDFC RP ₹1 · MR ₹0.7 · Bonvoy ₹0.8)
+// Forex: Premier 1.167% · DCB 2.36% less 1% Valueback · Atlas/TravelOne/Amex 4.13%
 // ══════════════════════════════════════════════════════════
 const CATS = [
-  { id:'ph',  e:'🏨', n:'Portal Hotels',       s:'via Hopper',         badge:'75.6%', bcls:'cbg', isForex:true,
-    best:'HSBC Premier', bsub:'Hopper → Accor ALL 1:1', rv:75.6, rc:'ng',
-    why:'36 pts/₹100 via Premier Hopper → Accor ALL 1:1 → ₹2.1/pt = ₹75.6 per ₹100. Highest return in your entire wallet.',
-    cav:'⚠️ 18k pts/month shared cap with flights. Prioritise hotel over flight bookings for cap allocation.',
-    alts:[{l:'TravelOne Hopper',r:'50.4%',n:'Fallback if Premier cap hit'},{l:'DCB SmartBuy',r:'33.3%',n:'10X hotels · 10k RP/mo cap'}],
+  { id:'ph', e:'🏨', n:'Portal Hotels', s:'Travel with Points (Hopper)', badge:'75.6%', bcls:'cbg', isForex:true,
+    best:'HSBC Premier', bsub:'Hopper 36 pts/₹100 → Accor ALL 1:1', rv:75.6, rc:'ng',
+    why:'36 pts/₹100 on Premier via Travel with Points → Accor ALL 1:1 at ₹2.1 = ₹75.6 per ₹100. Still the top return in the wallet.',
+    cav:'18,000 accelerated pts/month cap, shared with TravelOne and with flights. Spend the cap on hotels first (2× flights).',
+    alts:[{l:'TravelOne Hopper',r:'50.4%',n:'24 pts/₹100 · same shared cap'},{l:'DCB SmartBuy 10X',r:'33.3%',n:'10k RP/mo cap · ≈53% if RP → KrisFlyer 1:1'}],
     dynCards:[
-      {id:'premier_h',card:'HSBC Premier Hopper',rate:75.6,note:'36 pts/₹100 → Accor ALL 1:1',cls:'top',ptsRate:36,ptsProg:'Accor pts'},
-      {id:'travelone_h',card:'TravelOne Hopper ⚡',rate:50.4,note:'24 pts/₹100 → Accor ALL 1:1 (18k cap)',cls:'hi',ptsRate:24,ptsProg:'Accor pts'},
-      {id:'dcb_sb_h',card:'DCB SmartBuy Hotels',rate:33.3,note:'10X total · 10k RP/mo cap · Accor 2:1',cls:'hi'},
+      {id:'premier_h',card:'HSBC Premier Hopper',rate:75.6,note:'36 pts/₹100 → Accor ALL 1:1',cls:'top',ptsRate:36,ptsProg:'HSBC pts'},
+      {id:'travelone_h',card:'TravelOne Hopper',rate:50.4,note:'24 pts/₹100 → Accor ALL 1:1 · shared 18k cap',cls:'hi',ptsRate:24,ptsProg:'HSBC pts'},
+      {id:'dcb_sb_h',card:'DCB SmartBuy Hotels',rate:33.3,note:'10X = 33.3 RP/₹100 · 10k RP/mo cap',cls:'hi',ptsRate:33.3,ptsProg:'HDFC RP'},
     ]
   },
-  { id:'pf',  e:'✈️', n:'Portal Flights',      s:'via Hopper',         badge:'37.8%', bcls:'cbg', isForex:true,
-    best:'HSBC Premier', bsub:'Hopper → Accor ALL 1:1', rv:37.8, rc:'ng',
-    why:'18 pts/₹100 via Premier Hopper → Accor ALL 1:1 → ₹37.8 per ₹100. Beats TravelOne Hopper flights (33.6%).',
-    cav:'Hotels earn 36 pts vs flights 18 pts on same cap — prioritise hotel cap allocation.',
-    alts:[{l:'TravelOne Hopper',r:'33.6%',n:'Fallback (⚡ cashback to June)'},{l:'DCB SmartBuy',r:'~10%',n:'5X SmartBuy flights'}],
+  { id:'pf', e:'✈️', n:'Portal Flights', s:'Travel with Points (Hopper)', badge:'37.8%', bcls:'cbg', isForex:true,
+    best:'HSBC Premier', bsub:'Hopper 18 pts/₹100 → Accor ALL 1:1', rv:37.8, rc:'ng',
+    why:'18 pts/₹100 on Premier → Accor ALL 1:1 = ₹37.8 per ₹100. TravelOne earns 16 pts on the same shared cap.',
+    cav:'Same 18k/month shared cap as hotels. Travel with Points may add a per-leg convenience fee — compare the fare first.',
+    alts:[{l:'TravelOne Hopper',r:'33.6%',n:'16 pts/₹100'},{l:'DCB SmartBuy 5X',r:'16.7%',n:'16.65 RP/₹100 · inside 10k RP/mo cap'}],
     dynCards:[
-      {id:'premier_f',card:'HSBC Premier Hopper',rate:37.8,note:'18 pts/₹100 → Accor ALL 1:1',cls:'hi',ptsRate:18,ptsProg:'Accor pts'},
-      {id:'travelone_f',card:'TravelOne Hopper ⚡',rate:33.6,note:'16 pts/₹100 (cashback active)',cls:'hi',ptsRate:16,ptsProg:'Accor pts'},
-      {id:'dcb_sb_f',card:'DCB SmartBuy Flights',rate:10.5,note:'5X total on SmartBuy · Accor 2:1',cls:'md'},
+      {id:'premier_f',card:'HSBC Premier Hopper',rate:37.8,note:'18 pts/₹100 → Accor ALL 1:1',cls:'hi',ptsRate:18,ptsProg:'HSBC pts'},
+      {id:'travelone_f',card:'TravelOne Hopper',rate:33.6,note:'16 pts/₹100 · shared 18k cap',cls:'hi',ptsRate:16,ptsProg:'HSBC pts'},
+      {id:'dcb_sb_f',card:'DCB SmartBuy Flights',rate:16.7,note:'5X = 16.65 RP/₹100 · 10k RP/mo cap',cls:'md',ptsRate:16.65,ptsProg:'HDFC RP'},
     ]
   },
-  { id:'af',  e:'🛫', n:'Direct Airline MCC',  s:'airline websites',   badge:'17.7%', bcls:'cbw', isForex:true,
-    best:'Axis Atlas', bsub:'5 EM/₹100 → KrisFlyer 1:2', rv:17.7, rc:'nb',
-    why:'5 EDGE Miles/₹100 on airline MCC → KrisFlyer 1:2 = 10 miles → ₹1.6 CPP = ~17.7% net after forex.',
-    cav:'Uses Group A cap (30k/yr). Always prefer Premier Hopper portal when booking is possible.',
-    alts:[{l:'HSBC Premier Hopper',r:'37.8%',n:'Book via Hopper portal instead if available'}],
+  { id:'ai', e:'🇮🇳', n:'Air India Direct', s:'airindia.com · INR', badge:'17.5%', bcls:'cbw', isForex:false,
+    best:'Amex Plat Charge', bsub:'Reward Xcelerator 10X = 25 MR/₹100', rv:17.5, rc:'na',
+    why:'Air India via Reward Xcelerator earns 25 MR/₹100 × ₹0.7 = 17.5%, edging Atlas (5 EM → 10 KrisFlyer miles = 16%) and saving Atlas Group A headroom.',
+    cav:'Xcelerator listed to 31 Jan 2027 — confirm Air India 10X still applies to Plat Charge and that you are enrolled before a big booking.',
+    alts:[{l:'Axis Atlas',r:'16%',n:'5 EM/₹100 → KrisFlyer 1:2 · uses Group A cap'},{l:'HSBC Premier base',r:'6.3%',n:'3 pts → Accor 1:1'}],
     dynCards:[
-      {id:'atlas_a',card:'Axis Atlas',rate:17.7,note:'5 EM/₹100 → KrisFlyer 1:2 (Group A cap)',cls:'md',ptsRate:10,ptsProg:'KrisFlyer miles'},
-      {id:'premier_fx',card:'HSBC Premier base',rate:5.1,note:'3 pts/₹100 + 0.99% markup fallback',cls:'lo',ptsRate:3,ptsProg:'Accor pts'},
+      {id:'amex_ai',card:'Amex Plat Charge Xcelerator',rate:17.5,note:'25 MR/₹100 × ₹0.7 · to 31 Jan 2027',cls:'hi',ptsRate:25,ptsProg:'MR'},
+      {id:'atlas_ai',card:'Axis Atlas',rate:16,note:'5 EM/₹100 → 10 KrisFlyer miles · Group A',cls:'hi',ptsRate:5,ptsProg:'EDGE Miles'},
+      {id:'premier_ai',card:'HSBC Premier base',rate:6.3,note:'3 pts/₹100 → Accor 1:1',cls:'lo',ptsRate:3,ptsProg:'HSBC pts'},
     ]
   },
-  { id:'gf',  e:'🌍', n:'Generic Forex',       s:'non-travel MCC',     badge:'5.1%', bcls:'cbw', isForex:true,
+  { id:'af', e:'🛫', n:'Direct Airline MCC', s:'airline websites', badge:'16%', bcls:'cbw', isForex:true,
+    best:'Axis Atlas', bsub:'5 EM/₹100 → KrisFlyer 1:2', rv:16, rc:'nb',
+    why:'5 EDGE Miles/₹100 on airline MCC → 10 KrisFlyer miles × ₹1.6 = 16% when INR-billed; ~11.9% after 4.13% forex if billed abroad.',
+    cav:'Consumes Group A (30,000 EM/yr, resets 1 Jan). Book via Premier Hopper instead whenever the fare exists there (37.8%).',
+    alts:[{l:'TravelOne',r:'8.4%',n:'4 pts/₹100 on airline MCC (INR)'},{l:'HSBC Premier base',r:'6.3% / 5.1% FX',n:'3 pts → Accor 1:1'}],
+    dynCards:[
+      {id:'atlas_a',card:'Axis Atlas (INR)',rate:16,note:'5 EM/₹100 → KrisFlyer 1:2 · Group A',cls:'hi',ptsRate:5,ptsProg:'EDGE Miles'},
+      {id:'atlas_afx',card:'Axis Atlas (foreign ccy)',rate:11.9,note:'16% gross − 4.13% forex',cls:'md',ptsRate:5,ptsProg:'EDGE Miles'},
+      {id:'to_af',card:'TravelOne (INR)',rate:8.4,note:'4 pts/₹100 → Accor 1:1',cls:'md',ptsRate:4,ptsProg:'HSBC pts'},
+      {id:'premier_fx',card:'HSBC Premier',rate:5.1,note:'3 pts/₹100 − 1.167% forex',cls:'lo',ptsRate:3,ptsProg:'HSBC pts'},
+    ]
+  },
+  { id:'gf', e:'🌍', n:'Generic Forex', s:'non-travel MCC abroad', badge:'5.1%', bcls:'cbw', isForex:true,
     best:'HSBC Premier', bsub:'0.99% markup · 3 pts base', rv:5.1, rc:'nb',
-    why:'3 pts/₹100 → Accor ALL → ₹6.3/₹100. Minus 1.167% forex = ~5.1% net. Premier has lowest markup in stack.',
-    cav:'TravelOne cashback expires June 2026 → Premier default from July. Utilities/tax/e-wallets capped at ₹1L/mo.',
-    alts:[{l:'TravelOne (⚡ till June)',r:'~7.8%',n:'Still better while cashback active'},{l:'Amex Plat Charge',r:'~7.12%',n:'Best for MCC 7991'}],
+    why:'3 pts/₹100 → Accor ALL = 6.3% gross, minus 1.167% forex = ~5.1% net. Lowest markup in the stack.',
+    cav:'TravelOne forex offers have all expired (standard 4.13%). Utilities/insurance on Premier share a ₹1L/month cap.',
+    alts:[{l:'TravelOne',r:'~4.3%',n:'4 pts forex − 4.13%'},{l:'DCB Metal',r:'~2.0%',n:'3.33% − 2.36% + 1% Valueback'},{l:'Amex Plat Charge',r:'~1.1%',n:'7.5 MR × ₹0.7 − 4.13%'}],
     dynCards:[
-      {id:'travelone_gf',card:'TravelOne ⚡ (till June)',rate:7.8,note:'3.5% cashback active · expires June 2026',cls:'md'},
-      {id:'amex_gf',card:'Amex Plat Charge',rate:7.12,note:'3X MR intl · best for MCC 7991',cls:'md'},
-      {id:'premier_gf',card:'HSBC Premier',rate:5.1,note:'3 pts + 0.99% markup (default from July)',cls:'lo'},
+      {id:'premier_gf',card:'HSBC Premier',rate:5.1,note:'3 pts − 1.167% forex',cls:'md',ptsRate:3,ptsProg:'HSBC pts'},
+      {id:'to_gf',card:'TravelOne',rate:4.3,note:'4 pts − 4.13% forex',cls:'lo',ptsRate:4,ptsProg:'HSBC pts'},
+      {id:'dcb_gf',card:'DCB Metal + Valueback',rate:2.0,note:'3.33 RP − 1.36% net forex',cls:'lo'},
+      {id:'amex_gf',card:'Amex Plat Charge',rate:1.1,note:'3X intl = 7.5 MR × ₹0.7 − 4.13%',cls:'lo'},
     ]
   },
-  { id:'gg',  e:'🎪', n:'GetYourGuide',        s:'MCC 7991 – entmt.',  badge:'7.12%', bcls:'cbw', isForex:true,
-    best:'Amex Plat Charge', bsub:'3X MR on international', rv:7.12, rc:'na',
-    why:'GetYourGuide = MCC 7991 (Entertainment). Premier/TravelOne Hopper do NOT apply. Amex Plat 3X MR/₹40 = ~7.12% net.',
-    cav:'This MCC is critical — always verify before booking. Klook=4722 earns TravelOne accelerated; GetYourGuide=7991 does not.',
-    alts:[{l:'HSBC Premier base',r:'~5.1%',n:'Only base 3 pts — Hopper not triggered'}],
+  { id:'gg', e:'🎪', n:'GetYourGuide', s:'MCC 7991 – entmt.', badge:'5.1%', bcls:'cbw', isForex:true,
+    best:'HSBC Premier', bsub:'Base 3 pts · 0.99% markup', rv:5.1, rc:'nb',
+    why:'MCC 7991 gets no travel acceleration anywhere. With MR at ₹0.7, Plat Charge 3X intl nets only ~1.1% after forex, so Premier base (~5.1%) wins.',
+    cav:'Changed from earlier advice (which assumed MR at ₹1.5). Re-check if you value MR higher for a specific Marriott redemption.',
+    alts:[{l:'Amex Plat Charge',r:'~1.1%',n:'7.5 MR/₹100 − 4.13% forex · FHR-type perks only'}],
     dynCards:[
-      {id:'amex_gg',card:'Amex Plat Charge',rate:7.12,note:'3X MR/₹40 on international (MCC 7991)',cls:'md'},
-      {id:'premier_gg',card:'HSBC Premier base',rate:5.1,note:'Base 3 pts only — no Hopper on MCC 7991',cls:'lo'},
+      {id:'premier_gg',card:'HSBC Premier',rate:5.1,note:'3 pts − 1.167% forex',cls:'md',ptsRate:3,ptsProg:'HSBC pts'},
+      {id:'amex_gg',card:'Amex Plat Charge',rate:1.1,note:'3X intl at ₹0.7/MR − 4.13%',cls:'lo'},
     ]
   },
-  { id:'kl',  e:'🎫', n:'Klook / Tours',       s:'MCC 4722',           badge:'7.67%', bcls:'cbw', isForex:true,
-    best:'TravelOne', bsub:'MCC 4722 accelerated', rv:7.67, rc:'na',
-    why:'Klook = MCC 4722 (Travel Agency) → TravelOne accelerated rate applies → ~7.67% net. Beats Amex Plat (~7.12%).',
-    cav:'⚡ TravelOne cashback expires June 2026. Post-June: Amex Plat Charge (~7.12%) beats Premier base (~5.1%).',
-    alts:[{l:'Amex Plat Charge',r:'~7.12%',n:'Best fallback from July 2026'}],
+  { id:'kl', e:'🎫', n:'Klook / Tours', s:'MCC 4722', badge:'8.4%', bcls:'cbw', isForex:true,
+    best:'TravelOne (INR) · Premier (FX)', bsub:'Billing currency decides', rv:8.4, rc:'na',
+    why:'Klook = MCC 4722. INR-billed: TravelOne 4 pts → 8.4%. Foreign-currency billed (e.g. SGD): Premier 5.1% beats TravelOne 4.3% because of the markup gap.',
+    cav:'Check the checkout currency before paying.',
+    alts:[{l:'Premier (foreign ccy)',r:'5.1%',n:'3 pts − 1.167%'},{l:'TravelOne (foreign ccy)',r:'4.3%',n:'4 pts − 4.13%'}],
     dynCards:[
-      {id:'travelone_kl',card:'TravelOne ⚡ (till June)',rate:7.67,note:'MCC 4722 accelerated · cashback active',cls:'md'},
-      {id:'amex_kl',card:'Amex Plat Charge',rate:7.12,note:'Best option from July 2026',cls:'md'},
-      {id:'premier_kl',card:'HSBC Premier base',rate:5.1,note:'Base rate only on MCC 4722',cls:'lo'},
+      {id:'to_kl',card:'TravelOne (INR-billed)',rate:8.4,note:'4 pts/₹100 on MCC 4722 → Accor 1:1',cls:'hi',ptsRate:4,ptsProg:'HSBC pts'},
+      {id:'premier_kl',card:'HSBC Premier (FX-billed)',rate:5.1,note:'3 pts − 1.167% forex',cls:'md',ptsRate:3,ptsProg:'HSBC pts'},
+      {id:'to_klfx',card:'TravelOne (FX-billed)',rate:4.3,note:'4 pts − 4.13% forex',cls:'lo'},
     ]
   },
-  { id:'hd',  e:'🛎️', n:'Hotel Direct',       s:'marriott.com, accor.com, hyatt.com', badge:'16%', bcls:'cbw', isForex:false,
+  { id:'hd', e:'🛎️', n:'Hotel Direct', s:'marriott.com, accor.com…', badge:'16%', bcls:'cbw', isForex:false,
     best:'Axis Atlas', bsub:'5 EM/₹100 hotel MCC → KrisFlyer 1:2', rv:16, rc:'nb',
-    why:'Direct hotel website bookings (not via Hopper/SmartBuy portal). Axis Atlas earns 5 EM/₹100 on hotel MCCs → KrisFlyer 1:2 = 10 miles at ₹1.6 CPP = 16% gross. Use when portal unavailable.',
-    cav:'Always prefer HSBC Premier Hopper portal (75.6%) when possible. Axis Group A cap 30k/yr — prioritise J/F class awards.',
-    alts:[{l:'HSBC Premier base',r:'6.3%',n:'3 pts/₹100 → Accor ALL 1:1 at ₹2.1'},{l:'Amex Plat Charge (FHR)',r:'~7.12%',n:'Fine Hotels & Resorts: free breakfast + room upgrade'}],
+    why:'Direct hotel sites (no portal): Atlas 5 EM/₹100 → 10 KrisFlyer miles = 16% INR-billed, ~11.9% if billed abroad.',
+    cav:'Use Premier Hopper (75.6%) whenever the property is bookable there. Atlas spend eats Group A headroom.',
+    alts:[{l:'HSBC Premier base',r:'6.3% / 5.1% FX',n:'3 pts → Accor 1:1'},{l:'Amex Plat Charge FHR',r:'perks',n:'Breakfast, upgrade, late checkout — earn is weak at ₹0.7/MR'}],
     dynCards:[
-      {id:'atlas_hd',card:'Axis Atlas',rate:16,note:'5 EM/₹100 on hotel MCC → KrisFlyer 1:2 (Group A)',cls:'hi',ptsRate:10,ptsProg:'KrisFlyer miles'},
-      {id:'amex_fhr',card:'Amex Plat Charge (FHR)',rate:7.12,note:'Fine Hotels & Resorts: breakfast + upgrade + late checkout',cls:'md'},
-      {id:'premier_hd',card:'HSBC Premier base',rate:6.3,note:'3 pts/₹100 → Accor ALL 1:1 (no Hopper on direct)',cls:'lo',ptsRate:3,ptsProg:'Accor pts'},
+      {id:'atlas_hd',card:'Axis Atlas',rate:16,note:'5 EM/₹100 → KrisFlyer 1:2 (Group A)',cls:'hi',ptsRate:5,ptsProg:'EDGE Miles'},
+      {id:'premier_hd',card:'HSBC Premier base',rate:6.3,note:'3 pts/₹100 → Accor 1:1',cls:'md',ptsRate:3,ptsProg:'HSBC pts'},
+      {id:'amex_fhr',card:'Amex Plat Charge (FHR)',rate:1.75,note:'2.5 MR/₹100 × ₹0.7 + FHR perks',cls:'lo'},
     ]
   },
-  { id:'is',  e:'🛒', n:'INR Shopping',        s:'Amazon, SmartBuy',   badge:'', bcls:'', isForex:false,
-    best:'DCB SmartBuy', bsub:'3.33 RP/₹100 + milestone boost', rv:0, rc:'ng',
-    why:'Best all-round INR earner. SmartBuy portal gives higher multiples. Quarterly ₹4L → 10k RP milestone currently boosting effective rate.',
-    cav:'Enter ₹ amount below for milestone-adjusted comparison.',
-    alts:[{l:'MRCC Multiplier',r:'~15%',n:'If merchant is on Reward Multiplier portal (25k cap/mo)'},{l:'MRCC Monthly target',r:'+25%',n:'On 4 qualifying ₹1500+ txns for 1000 MR bonus'}],
-    dynCards:'inr', // special flag
+  { id:'vc', e:'🎟️', n:'Vouchers', s:'GYFTR · ShopWise', badge:'10%', bcls:'cbg', isForex:false,
+    best:'DCB SmartBuy GYFTR', bsub:'3X = 10 RP/₹100 up to ~₹45K/mo', rv:10, rc:'ng',
+    why:'DCB 3X on GYFTR vouchers ≈ 10% until the 3,000 accelerated RP/month voucher sub-cap (bonus portion only, ≈₹45K spend). Then Plat Charge ShopWise 5X = 12.5 MR/₹100 ≈ 8.75%.',
+    cav:'ShopWise Amazon Pay: 1.5% + GST (1.77%) fee → ~7% net; Nykaa carries no fee. Check the Amazon Pay ₹10K/month ShopWise cap. Voucher RP sit inside DCB\'s 10k RP/month SmartBuy cap.',
+    alts:[{l:'Plat Charge ShopWise (Nykaa)',r:'8.75%',n:'12.5 MR/₹100 · no fee'},{l:'Plat Charge ShopWise (Amazon)',r:'~7.0%',n:'after 1.77% fee'}],
+    dynCards:[
+      {id:'dcb_vc',card:'DCB GYFTR 3X',rate:10,note:'≈₹45K/mo before 3k voucher cap',cls:'hi',ptsRate:10,ptsProg:'HDFC RP'},
+      {id:'ap_vc_n',card:'Plat Charge ShopWise · Nykaa',rate:8.75,note:'12.5 MR/₹100, no fee',cls:'md',ptsRate:12.5,ptsProg:'MR'},
+      {id:'ap_vc_a',card:'Plat Charge ShopWise · Amazon',rate:7.0,note:'12.5 MR on total incl. 1.77% fee',cls:'md',ptsRate:12.5,ptsProg:'MR'},
+    ]
   },
-  { id:'dn',  e:'🍽️', n:'Dining',             s:'restaurants, cafes', badge:'', bcls:'', isForex:false,
-    best:'Amex MRCC', bsub:'10 MR/₹100 Reward Multiplier', rv:0, rc:'nb',
-    why:'10 MR/₹100 via Reward Multiplier portal = ~₹1.5/₹100 at ₹1.5 CPP. DCB Metal 3.33 RP/₹100 as fallback.',
-    cav:'Check Reward Multiplier portal. 25k bonus MR/mo cap shared with Plat Charge. No tab-switching.',
-    alts:[{l:'DCB Metal',r:'3.5%',n:'Best fallback — see milestone boost below'}],
+  { id:'ut', e:'💡', n:'Utilities', s:'electricity, broadband', badge:'7.1%', bcls:'cbw', isForex:false,
+    best:'Plat Charge → Amazon Pay', bsub:'ShopWise voucher, then pay bill', rv:7.1, rc:'na',
+    why:'Buy an Amazon Pay voucher via ShopWise on Plat Charge (~7.1% net of fee) and pay the bill with it. Beats Premier direct (6.3%).',
+    cav:'Premier utilities sit in its ₹1L/month capped bucket. Amazon Pay ShopWise cap applies.',
+    alts:[{l:'HSBC Premier direct',r:'6.3%',n:'3 pts → Accor · ₹1L/mo capped bucket'}],
+    dynCards:[
+      {id:'ap_ut',card:'Plat Charge → Amazon Pay',rate:7.1,note:'ShopWise 5X, 1.77% fee',cls:'md'},
+      {id:'pr_ut',card:'HSBC Premier direct',rate:6.3,note:'3 pts/₹100 (capped bucket)',cls:'md',ptsRate:3,ptsProg:'HSBC pts'},
+    ]
+  },
+  { id:'fu', e:'⛽', n:'Fuel', s:'petrol pumps', badge:'3.5%', bcls:'cbw', isForex:false,
+    best:'MRCC → Plat Charge', bsub:'MRCC for 4 qualifying txns, then Plat Charge', rv:3.5, rc:'na',
+    why:'Fuel earns zero on Premier, TravelOne, DCB and Atlas. MRCC first if you still need the 4 × ₹1,500 bonus this month, then Plat Charge 5 MR/₹100 (~3.5%).',
+    cav:'Plat Charge fuel earn capped at 5,000 MR/month (~₹1L). Fuel still counts toward DCB\'s ₹4L quarterly milestone if you need to close it.',
+    alts:[{l:'DCB Metal',r:'0% + milestone',n:'Zero earn but counts to ₹4L/qtr'}],
+    dynCards:'fuel',
+  },
+  { id:'is', e:'🛒', n:'INR Shopping', s:'general online/offline', badge:'', bcls:'', isForex:false,
+    best:'Compare below', bsub:'Premier · Atlas · DCB + milestone · MRCC bonuses', rv:0, rc:'ng',
+    why:'Premier base (3 pts → Accor) = 6.3% uncapped. Atlas base (2 EM → KrisFlyer 1:2) = 6.4% but burns Group A. DCB rises above both while its quarterly milestone is open.',
+    cav:'Enter an amount — milestone boosts update live from the 🎯 tab.',
+    alts:[],
     dynCards:'inr',
   },
-  { id:'atm', e:'🏧', n:'Overseas ATM',        s:'cash abroad',        badge:'0% FX', bcls:'cbg', isForex:true,
+  { id:'dn', e:'🍽️', n:'Dining', s:'restaurants, cafés', badge:'', bcls:'', isForex:false,
+    best:'Compare below', bsub:'Same engine as INR spend', rv:0, rc:'nb',
+    why:'Reward Multiplier shut on 30 Sep 2026, so dining is a plain INR comparison now.',
+    cav:'Enter an amount for the live comparison.',
+    alts:[],
+    dynCards:'inr',
+  },
+  { id:'atm', e:'🏧', n:'Overseas ATM', s:'cash abroad', badge:'0% FX', bcls:'cbg', isForex:true,
     best:'IDFC First WOW', bsub:'0% markup · ₹199+GST flat', rv:0, rc:'ng',
-    why:'Only card for overseas ATM. 0% forex markup, 45-day IFP, ₹199+GST flat fee, treated as purchase.',
-    cav:'Always carry IDFC WOW travelling. Never use any other card for overseas ATM.',
+    why:'Treats withdrawals as purchases: 0% forex, 45-day interest-free, ₹199+GST flat fee.',
+    cav:'Never use another card for overseas ATM.',
     alts:[],
     dynCards:[{id:'idfc',card:'IDFC First WOW',rate:0,note:'0% markup · ₹199+GST flat · 45-day IFP',cls:'hi',special:'Best — only option'}],
   },
@@ -703,33 +809,33 @@ const CATS = [
 // ══════════════════════════════════════════════════════════
 const CARDS = [
   { id:'pr', name:'HSBC Premier', iss:'HSBC India · Mastercard', isPrimary:true, network:'mc', img:'', grad:'linear-gradient(135deg,#0C4A6E,#0284C7)',
-    tags:[['PRIMARY · LIVE','tl'],['0.99% Forex','tg'],['36X Hopper Hotels','tb'],['18X Hopper Flights','tb']],
-    earn:[{c:'Hopper Hotels (replaces base)',r:'36 pts',u:'/₹100'},{c:'Hopper Flights (replaces base)',r:'18 pts',u:'/₹100'},{c:'Forex Base',r:'3 pts',u:'/₹100'}],
-    info:`<span class="ig">● NOW LIVE — Primary travel card</span><br><br><span class="ia">Forex markup: 0.99%</span> (~1.167% with GST) — lowest in stack<br><br>Transfer partners 1:1: Accor ALL · Air India · Qatar Privilege Club<br><br>Hopper cap: 18,000 pts/month shared (hotels + flights)<br><br><span class="io">⚠️</span> Utilities/tax/insurance/e-wallets → ₹1L/month cumulative cap<br><br>Confirm with RM if TravelOne pts merge into Premier pool before downgrade.`},
+    tags:[['PRIMARY','tl'],['0.99% Forex','tg'],['12X Hopper Hotels','tb'],['6X Hopper Flights','tb'],['Pts never expire','tg']],
+    earn:[{c:'Hopper Hotels (incl. base)',r:'36 pts',u:'/₹100'},{c:'Hopper Flights (incl. base)',r:'18 pts',u:'/₹100'},{c:'Everything else',r:'3 pts',u:'/₹100 uncapped'},{c:'Utilities/insurance bucket',r:'3 pts',u:'₹1L/mo cap'},{c:'Fuel',r:'0',u:'excluded'}],
+    info:`<span class="ia">Forex 0.99%</span> (~1.167% with GST) — lowest in stack.<br><br>20 partners, most 1:1 · TAT ~1 day (Air India/Hainan 5, JAL 10). Exceptions: Turkish/United/Hainan 2:1 · Shangri-La 5:1 · AirAsia 1:3.<br><br>HSBC is the only Indian issuer still at <strong>Accor 1:1</strong>.<br><br>Hopper accelerated cap: 18,000 pts/month, shared with TravelOne.`},
   { id:'aa', name:'Axis Atlas', iss:'Axis Bank · Visa', network:'visa', img:'', grad:'linear-gradient(135deg,#1E3A8A,#6D28D9)',
-    tags:[['5X Travel','tb'],['2X Online','tb'],['Group A 30k/yr','to'],['4.13% Forex','tr']],
-    earn:[{c:'Airlines & Hotels (direct MCC)',r:'5 EM',u:'/₹100'},{c:'Online Spends',r:'2 EM',u:'/₹100'},{c:'All Other',r:'1 EM',u:'/₹100'}],
-    info:`Transfer partners (post-April 2, 2026):<br>• SQ KrisFlyer 1:2 <span style="background:var(--goldd);color:var(--gold);font-size:10px;padding:1px 5px;border-radius:3px">Group A</span><br>• Qantas 1:2 <span style="background:var(--goldd);color:var(--gold);font-size:10px;padding:1px 5px;border-radius:3px">Group A</span><br>• Air India 1:1 · ITC→Marriott (Group B) · JAL (last resort)<br><br><span class="iw">REMOVED:</span> Accor ALL, Marriott direct, Qatar, BA (devalued 2:1)<br><br><strong>Group A deploy deadline: Dec 31, 2026</strong>`},
+    tags:[['5X Travel','tb'],['Group A 30k/yr','to'],['Group B 1.2L/yr','tb'],['4.13% Forex','tr'],['Closed to new','tr']],
+    earn:[{c:'Direct airline & hotel MCC',r:'5 EM',u:'/₹100'},{c:'Other spends',r:'2 EM',u:'/₹100'},{c:'Fuel',r:'0',u:'excluded'}],
+    info:`<strong>Partner table after 23 Sep 2026</strong><br>• Group A 1:2 — KrisFlyer, JAL, Aeroplan, United, Turkish, Thai, Etihad, Ethiopian, Wyndham + <span class="io">Air India, Flying Blue, Qantas (moved from B)</span><br>• Group A 2:1 — Accor (back, 4× worse than before Apr), Asia Miles, BA, Finnair, Qatar, Vietnam<br>• Group B — Hilton 1:2 (new), IHG 1:2, Postcard 1:2, AirAsia 1:2, SpiceJet 1:2, Miles & More 1:1 (own 2L cap), Orchid 1:1, Radisson 1:1, IndiGo 2:1 (intro 1:2)<br><br><span class="iw">Gone:</span> Marriott (Apr 2026), Club ITC (Sep 2026) — the ITC → Marriott chain is dead.<br><br>Transfer fee ₹199 + GST each. <strong>Group A resets 1 Jan — deploy by 31 Dec 2026.</strong>`},
   { id:'dc', name:'Diners Club Black Metal', iss:'HDFC Bank · Diners', network:'dc', img:'', grad:'linear-gradient(135deg,#111827,#374151)',
-    tags:[['10X SmartBuy Hotels','tb'],['Global Valueback','tg'],['₹4L Quarterly','to']],
-    earn:[{c:'All Spends (base)',r:'3.33 RP',u:'/₹100 (5 RP/₹150)'},{c:'SmartBuy Hotels',r:'10X total',u:'⚠️ 10k RP/mo cap'},{c:'SmartBuy Flights',r:'5X total',u:''}],
-    info:`Hotel bonus cap: 10,000 RP/mo (~₹33,333 hotel spend)<br><br>Global Valueback: 1% forex cashback → 1.36% net forex cost<br><br>Milestones: Quarterly ₹4L → 10k RP | Annual ₹8L → fee waiver<br><br><span class="ig">Finnair chain:</span> DCB → Finnair 1:1 → BA Avios 1:1 → Qatar 1:1 (all instant, same-day)`},
+    tags:[['10X SmartBuy Hotels','tb'],['5X Flights','tb'],['3X Vouchers · 3k cap','to'],['₹4L Quarterly','to'],['Valueback 1%','tg']],
+    earn:[{c:'All spends',r:'3.33 RP',u:'/₹100 (5/₹150)'},{c:'SmartBuy hotels',r:'10X',u:'33.3 RP/₹100'},{c:'SmartBuy flights',r:'5X',u:'16.65 RP/₹100'},{c:'GYFTR/Woohoo vouchers',r:'3X',u:'3k accel. RP/mo'},{c:'SmartBuy cap (all)',r:'10k RP',u:'/month'},{c:'Fuel',r:'0',u:'still counts to milestone'}],
+    info:`<strong>1:1 partners:</strong> KrisFlyer (2–3 day TAT), Flying Blue, Finnair, Vietnam, AirAsia, SpiceJet, IHG, Radisson, Wyndham<br><strong>2:1 partners:</strong> Air India, BA, Qatar, Asia Miles, Aeroplan, Etihad, Thai, Turkish, United, LifeMiles, Accor, Marriott, Club ITC<br><br><span class="ig">Avios chain:</span> DCB → Finnair 1:1 → BA 1:1 → Qatar 1:1, same day (vs Qatar direct 2:1).<br><br>Forex 2% + GST; Global Valueback returns 1% → ~1.36% net.<br><br>Voucher sub-cap (since 1 Jul 2026) sits inside the 10k overall SmartBuy cap.`},
   { id:'to', name:'HSBC TravelOne', iss:'HSBC India · Mastercard', network:'mc', img:'', grad:'linear-gradient(135deg,#881337,#C2410C)',
-    tags:[['Hopper 24X Hotels','tb'],['1:1 Accor ALL','tg'],['⚡ Cashback June','to'],['Review Aug 2026','tr']],
-    earn:[{c:'Hopper Hotels (replaces base)',r:'24 pts',u:'/₹100'},{c:'Hopper Flights (replaces base)',r:'16 pts',u:'/₹100'},{c:'Base',r:'4 pts',u:'/₹100'}],
-    info:`Hopper cap: 18,000 pts/month shared<br><br><span class="io">⚡ 3.5% forex cashback expires June 2026</span><br><br>MCC: Klook=4722 ✅ · GetYourGuide=7991 ❌ (base only)<br><br><span class="iw">⚠️ Renewal: August 2026.</span> With Premier live, evaluate closure. Confirm TravelOne pts merge with RM.`},
+    tags:[['Hopper 24X Hotels','tb'],['Accor 1:1','tg'],['4.13% Forex','tr'],['Renewal decision pending','to']],
+    earn:[{c:'Hopper hotels',r:'24 pts',u:'/₹100'},{c:'Hopper flights',r:'16 pts',u:'/₹100'},{c:'Travel & forex MCCs',r:'4 pts',u:'/₹100'},{c:'Other',r:'2 pts',u:'/₹100'},{c:'Fuel',r:'0',u:'excluded'}],
+    info:`Same 20 partners as Premier, mostly 1:1.<br><br>Forex offers expired (3.5% cashback ended 30 Jun; 0% promo ended 30 Sep). Standard 4.13%.<br><br>Best remaining niche: <strong>INR-billed Klook/MCC 4722</strong> (8.4%).<br><br><span class="iw">Points pool is separate from Premier</span> — confirm with RM whether they can merge before closing.`},
   { id:'ap', name:'Amex Platinum Charge', iss:'American Express', network:'amex', img:'', grad:'linear-gradient(135deg,#1F2937,#4B5563)',
-    tags:[['3X MR Intl','tb'],['Xcelerator 20X','to'],['FHR Hotels','to']],
-    earn:[{c:'International base',r:'3X MR',u:'/₹40'},{c:'Xcelerator – Darveys',r:'20X MR',u:''},{c:'Xcelerator – Tata CLiQ Luxury',r:'10X MR',u:''},{c:'Reward Multiplier portal',r:'up to 5X',u:'⚠️ 25k cap/mo'}],
-    info:`Best for: MCC 7991 (GetYourGuide) ~7.12% net<br><br>Fine Hotels & Resorts: Free breakfast, late checkout, upgrades<br><br>Transfer: Marriott · KrisFlyer · BA Avios · AsiaMiles · Air India<br><br><span class="iw">Cash withdrawal suspended in India.</span> 4.13% forex markup.`},
+    tags:[['Xcelerator AI 10X','to'],['ShopWise 5X','tb'],['Marriott 1:1','tg'],['Hilton 1:1.5','tg']],
+    earn:[{c:'Base',r:'1 MR',u:'/₹40'},{c:'International (3X)',r:'7.5 MR',u:'/₹100'},{c:'ShopWise (5X)',r:'12.5 MR',u:'/₹100'},{c:'Air India Xcelerator',r:'25 MR',u:'/₹100 to 31 Jan 27'},{c:'Fuel',r:'5 MR',u:'/₹100 · 5k MR/mo cap'}],
+    info:`<strong>MR transfer list (checked 18 Aug 2026)</strong><br>• Marriott 1:1 · Hilton 1:1.5 (up from 0.9) · Virgin 5:4 (up from 2:1)<br>• KrisFlyer, BA, Qatar, Asia Miles 2:1<br>• <span class="iw">Etihad dropped 1 Jul 2026</span> · Emirates suspended · no Accor route<br><br>Forex 3.5% + GST (4.13%). At ₹0.7/MR the forex earn is weak — Premier wins abroad.`},
   { id:'pt', name:'Amex Platinum Travel', iss:'American Express', network:'amex', img:'', grad:'linear-gradient(135deg,#78350F,#B45309)',
-    tags:[['₹1.9L Milestone','tb'],['₹7L Taj Voucher','to'],['Auto-credited','tg']],
-    earn:[{c:'All Spends',r:'MR Points',u:'standard earn'}],
-    info:`Milestones (post-March 9, 2026): ₹1.9L · ₹4L · ₹7L (Taj voucher) — all auto-credited<br><br>See 🎯 Miles tab for live milestone tracking and effective return calculation.`},
+    tags:[['₹4L → 10k MR','tb'],['₹7L → ₹20k Taj','to'],['Lounge needs ₹1L/qtr','tr']],
+    earn:[{c:'Base',r:'1 MR',u:'/₹50'}],
+    info:`<span class="iw">Devalued 10 Sep 2026:</span> ₹1.9L tier pays nothing · ₹4L = 10,000 MR · ₹7L = ₹20,000 Taj e-gift card (22,500 MR removed).<br><br>From 1 Oct 2026: 2 domestic lounge visits/quarter only after ₹1L spend in the previous quarter.<br><br>Track in 🎯 Miles.`},
   { id:'mr', name:'Amex MRCC', iss:'American Express', network:'amex', img:'', grad:'linear-gradient(135deg,#1E3A8A,#2563EB)',
-    tags:[['10 MR/₹100 portal','tp'],['Monthly Bonus','tg']],
-    earn:[{c:'Reward Multiplier Portal',r:'10 MR',u:'/₹100 (25k cap/mo)'},{c:'Base',r:'1 MR',u:'/₹50'}],
-    info:`Best use: All Reward Multiplier portal spend → 10 MR/₹100 = ~₹1.5/₹100 at ₹1.5 CPP<br><br>Rules: No tab-switching · Full payment via Amex · 25k bonus MR/mo cap shared with Plat Charge<br><br>Monthly bonus: 4× transactions ≥ ₹1,500 → 1,000 bonus MR (= ₹1,500). See 🎯 Miles tab.`},
+    tags:[['2 bonuses / month','tg'],['Reward Multiplier closed','tr']],
+    earn:[{c:'Base',r:'1 MR',u:'/₹50'},{c:'4 txns ≥ ₹1,500',r:'+1,000 MR',u:'/month'},{c:'₹20K monthly spend',r:'+1,000 MR',u:'/month (stacks)'}],
+    info:`Reward Multiplier shut 30 Sep 2026.<br><br>Both monthly bonuses stack — 2,000 MR (≈₹1,400) for ₹20K of non-voucher spend in ≥4 txns. Put voucher spend on Plat Charge ShopWise instead.`},
 ];
 
 // ══════════════════════════════════════════════════════════
@@ -740,6 +846,9 @@ function go(name,btn){
   document.querySelectorAll('.ntab').forEach(b=>b.classList.remove('on'));
   document.getElementById('screen-'+name).classList.add('active');
   btn.classList.add('on');
+  if(name==='routes') buildRoutes();
+  if(name==='optimize') buildOpt();
+  document.getElementById('screen-'+name).scrollTop=0;
 }
 
 // ── FLOATING CHAT ──
@@ -813,24 +922,30 @@ function renderDyn(catId, amt){
   const cat = CATS.find(c=>c.id===catId);
   let rows = [];
 
-  if(cat.dynCards === 'inr'){
-    // Build INR options with milestone boost
-    const dcbDef = MS_DEFS.find(m=>m.id==='dcb_q');
-    const dcbEff = msEffRate(dcbDef);
-    const mrccDef = MS_DEFS.find(m=>m.id==='mrcc_mo');
-    const mrccEff = msEffRate(mrccDef);
-
-    rows = [
-      { card:'MRCC Reward Multiplier', rate:15, note:'10 MR/₹100 via portal (25k cap/mo)', cls:'hi', isPortal:true },
-      { card:'DCB Metal' + (dcbEff.done?'':' + Milestone'), rate:dcbEff.rate,
-        note:`3.5% base${dcbEff.done?', milestone complete':`, +${dcbEff.boost.toFixed(1)}% milestone boost`}`,
-        boost: dcbEff.done ? 0 : dcbEff.boost,
-        boostNote: dcbEff.done ? '✅ Quarterly milestone complete' : `Quarterly: ${lakhs(msRemaining(dcbDef))} remaining → ₹${(dcbDef.rewardValue/1000).toFixed(0)}k bonus`,
-        cls: dcbEff.rate > 10 ? 'hi' : dcbEff.rate > 6 ? 'md' : 'lo'
-      },
-      { card:'Axis Atlas (online MCCs)', rate:3.2, note:'2 EM/₹100 → KrisFlyer at ₹0.8 CPP est.', cls:'lo' },
-      { card:'MRCC Monthly Bonus', rate:mrccEff.rate, note:`${MS[mrccDef.id]}/4 txns done · ${mrccEff.done?'Bonus earned!':'₹1,500 bonus on completing 4 txns'}`, boost:mrccEff.done?0:mrccEff.boost, boostNote:mrccEff.done?'✅ Monthly bonus achieved':`+${mrccEff.boost.toFixed(0)}% boost per ₹1,500+ qualifying transaction`, cls:mrccEff.done?'lo':mrccEff.rate>20?'top':'md' },
-    ];
+  if(cat.dynCards === 'inr' || cat.dynCards === 'fuel'){
+    const dcbDef=MS_DEFS.find(m=>m.id==='dcb_q'), dcbEff=msEffRate(dcbDef);
+    const m4=MS_DEFS.find(m=>m.id==='mrcc_mo'), m4e=msEffRate(m4);
+    const m20=MS_DEFS.find(m=>m.id==='mrcc_20k'), m20e=msEffRate(m20);
+    const b4=m4e.done?0:m4e.boost, b20=m20e.done?0:m20e.boost, mb=b4+b20;
+    const mrccRow={ card:'Amex MRCC + monthly bonuses', rate:1.4+mb,
+      note:`1.4% base · ${MS.mrcc_mo}/4 txns · ${lakhs(MS.mrcc_20k)}/₹20K`,
+      boost:mb, boostNote: mb>0?`+${b4.toFixed(1)}% 4-txn bonus (per ₹1.5k txn) · +${b20.toFixed(1)}% ₹20K bonus`:'',
+      cls: mb>8?'hi':mb>3?'md':'lo' };
+    const dcbRow={ card:'DCB Metal'+(dcbEff.done?'':' + quarterly milestone'), rate:(cat.dynCards==='fuel'?0:3.33)+(dcbEff.done?0:dcbEff.boost),
+      note: cat.dynCards==='fuel' ? '0 RP on fuel · spend still counts to ₹4L' : `3.33% base${dcbEff.done?' · milestone done':''}`,
+      boost: dcbEff.done?0:dcbEff.boost,
+      boostNote: dcbEff.done?'':`${lakhs(msRemaining(dcbDef))} left to ₹4L → ₹${(dcbDef.rewardValue/1000).toFixed(0)}k bonus`,
+      cls: dcbEff.rate>8?'hi':dcbEff.rate>5?'md':'lo' };
+    if(cat.dynCards==='fuel'){
+      rows=[ mrccRow,
+        { card:'Amex Plat Charge', rate:3.5, note:'5 MR/₹100 × ₹0.7 · cap 5,000 MR/month', cls:'md', ptsRate:5, ptsProg:'MR' },
+        dcbRow ];
+    } else {
+      rows=[
+        { card:'HSBC Premier', rate:6.3, note:'3 pts/₹100 → Accor 1:1 · uncapped', cls:'md', ptsRate:3, ptsProg:'HSBC pts' },
+        { card:'Axis Atlas', rate:6.4, note:'2 EM/₹100 → KrisFlyer 1:2 · burns Group A 30k/yr', cls:'md', ptsRate:2, ptsProg:'EDGE Miles' },
+        dcbRow, mrccRow ];
+    }
   } else if(Array.isArray(cat.dynCards)){
     rows = cat.dynCards.map(r=>({...r, rate:r.rate}));
   } else {
@@ -874,10 +989,11 @@ function animn(el,target){
 // ══════════════════════════════════════════════════════════
 // MILES TAB
 // ══════════════════════════════════════════════════════════
+function dcbNotice(){ const d=MS_DEFS[0], e=msEffRate(d); return e.done?`✅ DCB quarterly milestone done for ${d.period}.`:`⚡ DCB quarter (${d.period}) ends ${d.deadline} — ${daysLeft(d.deadline)} days left. Effective rate ${e.rate.toFixed(1)}% on the remaining ${lakhs(msRemaining(d))}.`; }
 function buildMiles(){
   const el=document.getElementById('screen-miles');
   let h=`<div class="stitle">Milestones</div>`;
-  h+=`<div class="notice n-gold">⚡ DCB quarterly cycle ends June 30 — ${daysLeft('2026-06-30')} days left. Effective rate = ${(MS_DEFS[0].baseRate + msBoost(MS_DEFS[0])).toFixed(1)}% on remaining spend.</div>`;
+  h+=`<div class="notice n-gold">${dcbNotice()}</div>`;
   h+=`<button class="gmail-scan-btn" onclick="scanGmail()">
     <span class="gmail-scan-icon">📧</span>
     <div class="gmail-scan-text">
@@ -1008,7 +1124,8 @@ function updateMs(id, val){
   }
   // update notice bar
   const notice = document.querySelector('#screen-miles .notice');
-  if(notice){ const dcb=MS_DEFS[0]; notice.textContent=`⚡ DCB quarterly cycle ends June 30 — ${daysLeft('2026-06-30')} days left. Effective rate = ${(dcb.baseRate+msBoost(dcb)).toFixed(1)}% on remaining spend.`; }
+  if(notice){ notice.textContent=dcbNotice(); }
+  saveMS();
 }
 
 function txnPip(id, count){
@@ -1026,6 +1143,7 @@ function txnPip(id, count){
   const eff = msEffRate(def);
   const effEl = mc && mc.querySelector('.ms-eff-num');
   if(effEl){ effEl.textContent=eff.done?'Done':eff.rate.toFixed(0)+'%'; }
+  saveMS();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -1069,195 +1187,305 @@ function togcard(id){document.getElementById('cd-'+id).classList.toggle('op');do
 // OPTIMIZE TAB
 // ══════════════════════════════════════════════════════════
 const RETURNS=[
-  {s:'Premier Hopper Hotels',c:'HSBC Premier',v:'75.6%',cls:'top',isnew:true},
-  {s:'Premier Hopper Flights',c:'HSBC Premier',v:'37.8%',cls:'hi',isnew:true},
-  {s:'TravelOne Hopper Hotels',c:'TravelOne ⚡',v:'50.4%',cls:'hi',isnew:false},
-  {s:'TravelOne Hopper Flights',c:'TravelOne ⚡',v:'33.6%',cls:'hi',isnew:false},
-  {s:'DCB SmartBuy Hotels',c:'DCB Metal',v:'33.3%',cls:'hi',isnew:false},
-  {s:'MRCC Reward Multiplier',c:'MRCC',v:'~15%',cls:'md',isnew:false},
-  {s:'Direct Airline MCC',c:'Axis Atlas',v:'17.7%',cls:'md',isnew:false},
-  {s:'DCB + Quarterly Milestone*',c:'DCB Metal',v:'~11%',cls:'md',isnew:true},
-  {s:'Premier Generic Forex',c:'HSBC Premier',v:'~5.1%',cls:'lo',isnew:true},
-  {s:'Klook MCC 4722',c:'TravelOne ⚡',v:'7.67%',cls:'md',isnew:false},
-  {s:'GetYourGuide MCC 7991',c:'Amex Plat Charge',v:'7.12%',cls:'lo',isnew:false},
+  {s:'Hopper Hotels',c:'HSBC Premier',v:'75.6%',cls:'top'},
+  {s:'Hopper Hotels',c:'TravelOne',v:'50.4%',cls:'hi'},
+  {s:'Hopper Flights',c:'HSBC Premier',v:'37.8%',cls:'hi'},
+  {s:'SmartBuy Hotels 10X',c:'DCB Metal',v:'33.3%',cls:'hi'},
+  {s:'Air India via Xcelerator',c:'Amex Plat Charge',v:'17.5%',cls:'md',isnew:true},
+  {s:'SmartBuy Flights 5X',c:'DCB Metal',v:'16.7%',cls:'md',isnew:true},
+  {s:'Direct airline/hotel (INR)',c:'Axis Atlas',v:'16%',cls:'md',isnew:true},
+  {s:'GYFTR vouchers 3X (≤₹45K/mo)',c:'DCB Metal',v:'~10%',cls:'md',isnew:true},
+  {s:'ShopWise Nykaa / Amazon',c:'Amex Plat Charge',v:'8.75% / 7%',cls:'md',isnew:true},
+  {s:'Klook INR-billed',c:'TravelOne',v:'8.4%',cls:'md',isnew:true},
+  {s:'General INR spend',c:'Premier · Atlas',v:'6.3–6.4%',cls:'lo',isnew:true},
+  {s:'Generic forex / GetYourGuide',c:'HSBC Premier',v:'~5.1%',cls:'lo',isnew:true},
+  {s:'Fuel',c:'Amex Plat Charge',v:'3.5%',cls:'lo'},
 ];
 function buildOpt(){
   const el=document.getElementById('screen-optimize');
   const rtrows=RETURNS.map(r=>`<div class="rtrow"><div><div class="rtspend">${r.s}${r.isnew?'<span class="newtag">updated</span>':''}</div><div class="rtcard">${r.c}</div></div><div class="rtval ${r.cls}">${r.v}</div></div>`).join('');
+  const V=getVals();
+  const vrow=(n,v)=>`<div class="valrow"><span class="valname">${n}</span><span class="valnum">${v}</span></div>`;
+  const cap=(n,s,v,g)=>`<div class="capcard"><div class="caphd"><div><div class="capname">${n}</div><div class="capsub">${s}</div></div><div class="capval">${v}</div></div><div class="capbar"><div class="capfill" style="width:0%;background:${g}"></div></div></div>`;
+  const chain=(t,s,y,n)=>`<div class="chain"><div class="chaintitle">${t}</div><div class="chainsteps">${s}</div><div class="chainyield">${y}</div>${n?`<div class="chainnote">${n}</div>`:''}</div>`;
+  const hz=(c,t,d)=>`<div class="hzitem"><div class="hzdot" style="background:${c}"></div><div><div class="hztext">${t}</div>${d?`<div class="hzdate">${d}</div>`:''}</div></div>`;
   el.innerHTML=`<div class="stitle">Strategy</div>
+  <div class="notice n-gold">Data checked ${DATA_ASOF}. Returns use your anchors below; edit anchors on the 🔀 Routes tab.</div>
   <div class="opthero"><div class="opthd">⚡ Net Effective Returns</div>${rtrows}</div>
   <div class="gcard" style="padding:13px 15px;margin-bottom:11px"><div style="font-size:14px;font-weight:800;margin-bottom:10px">💰 Valuation Anchors</div>
-  <div class="valrow"><span class="valname">Accor ALL</span><span class="valnum">₹2.1/pt</span></div>
-  <div class="valrow"><span class="valname">SQ KrisFlyer (Atlas 1:2)</span><span class="valnum">₹1.6 CPP</span></div>
-  <div class="valrow"><span class="valname">Amex MR</span><span class="valnum">₹1.5 CPP</span></div>
-  <div class="valrow"><span class="valname">Marriott Bonvoy</span><span class="valnum">₹0.8 CPP</span></div></div>
+    ${vrow('Accor ALL','₹'+V.ACC+'/pt')}${vrow('KrisFlyer','₹'+V.SQ+'/mile')}${vrow('HDFC RP (face)','₹1/pt')}${vrow('Amex MR (derived)','₹0.7/pt')}${vrow('Marriott Bonvoy','₹'+V.MAR+'/pt')}${vrow('Avios (BA/Qatar/Finnair)','₹'+V.BA+'/pt · est.')}
+  </div>
   <div class="stitle" style="margin-top:4px">Active Caps</div>
-  <div class="capcard"><div class="caphd"><div><div class="capname">HSBC Premier Hopper</div><div class="capsub">Hotels 36X + Flights 18X combined</div></div><div class="capval">18k/mo</div></div><div class="capbar"><div class="capfill" style="width:0%;background:linear-gradient(90deg,var(--accent),var(--purple))"></div></div></div>
-  <div class="capcard"><div class="caphd"><div><div class="capname">Axis Atlas – Group A</div><div class="capsub">KrisFlyer + Qantas · deploy by Dec 31</div></div><div class="capval">30k/yr</div></div><div class="capbar"><div class="capfill" style="width:0%;background:linear-gradient(90deg,var(--gold),var(--amber))"></div></div></div>
-  <div class="capcard"><div class="caphd"><div><div class="capname">DCB SmartBuy Hotel Bonus</div><div class="capsub">~₹33,333 hotel spend to exhaust</div></div><div class="capval">10k RP/mo</div></div><div class="capbar"><div class="capfill" style="width:0%;background:linear-gradient(90deg,#6D28D9,var(--purple))"></div></div></div>
-  <div class="capcard"><div class="caphd"><div><div class="capname">Amex Reward Multiplier</div><div class="capsub">Shared: MRCC + Plat Charge</div></div><div class="capval">25k MR/mo</div></div><div class="capbar"><div class="capfill" style="width:0%;background:linear-gradient(90deg,#1D4ED8,var(--purple))"></div></div></div>
+  ${cap('HSBC Hopper accelerated','Premier + TravelOne, hotels + flights','18k/mo','linear-gradient(90deg,var(--accent),var(--purple))')}
+  ${cap('Axis Atlas – Group A','KrisFlyer, JAL, Air India, Flying Blue, Qantas… resets 1 Jan','30k EM/yr','linear-gradient(90deg,var(--gold),var(--amber))')}
+  ${cap('Axis Atlas – Group B','Hilton, IHG, AirAsia… · Miles & More has own 2L miles cap','1.2L EM/yr','linear-gradient(90deg,#6D28D9,var(--purple))')}
+  ${cap('DCB SmartBuy accelerated','Hotels + flights + vouchers (voucher sub-cap 3k)','10k RP/mo','linear-gradient(90deg,#6D28D9,var(--purple))')}
+  ${cap('Amex Plat Charge fuel','≈₹1L fuel spend','5k MR/mo','linear-gradient(90deg,#1D4ED8,var(--purple))')}
   <div class="stitle" style="margin-top:14px">Transfer Chains</div>
-  <div class="chain"><div class="chaintitle">✈️ Axis Atlas → SQ KrisFlyer</div><div class="chainsteps">5 EM/₹100 → KrisFlyer 1:2 → 10 miles/₹100</div><div class="chainyield">~17.7% net at ₹1.6 CPP (after 4.13% forex)</div><div class="chainnote">⚠️ Group A cap 30k/yr. Prioritise J/F class. Deploy by Dec 31.</div></div>
-  <div class="chain"><div class="chaintitle">🎯 DCB → Finnair → BA → Qatar Avios</div><div class="chainsteps">DCB RP → Finnair 1:1 → BA Avios 1:1 → Qatar 1:1</div><div class="chainyield">Same-day · Doubles Avios vs DCB→Qatar direct (2:1)</div><div class="chainnote">One-time Finnair–BA account link required.</div></div>
-  <div class="chain"><div class="chaintitle">🏨 Atlas → ITC → Marriott (Group B)</div><div class="chainsteps">5 EM → ITC 1:2 = 10 pts → Marriott 2:3 = 15 pts</div><div class="chainyield">15 Marriott pts per 5 EDGE Miles (Group B, uncapped)</div></div>
+  ${chain('🎯 DCB → Finnair → BA → Qatar Avios','HDFC RP → Finnair 1:1 → BA 1:1 → Qatar 1:1','2× the Avios of DCB → Qatar direct (2:1), same day','One-time Avios account links needed.')}
+  ${chain('✈️ HSBC → Qatar / KrisFlyer','HSBC pts → Qatar 1:1 or KrisFlyer 1:1 · ~1 day','Cleanest Avios top-up; keeps Atlas Group A free','')}
+  ${chain('🌏 DCB → KrisFlyer 1:1','HDFC RP → KrisFlyer 1:1','Doubles the value of every RP at ₹1.6/mile','TAT 2–3 days — not for same-day award holds.')}
+  ${chain('🏨 Amex MR → Hilton 1:1.5','MR → Hilton (since 18 Aug 2026)','Hilton now gives more raw points per MR than Marriott','Hilton at ~₹0.4/pt ≈ ₹0.6/MR — only for specific redemptions.')}
+  ${chain('☠️ Atlas → ITC → Marriott','Club ITC removed Sep 2026 · Marriott removed Apr 2026','Dead chain','')}
   <div class="stitle" style="margin-top:14px">On The Horizon</div>
   <div class="gcard" style="padding:13px 15px">
-    <div class="hzitem"><div class="hzdot" style="background:var(--green)"></div><div><div class="hztext"><strong>HSBC Premier LIVE.</strong> Confirm TravelOne pts merge with RM before downgrade.</div></div></div>
-    <div class="hzitem"><div class="hzdot" style="background:var(--red)"></div><div><div class="hztext"><strong>DCB quarterly cycle ends.</strong> ₹1.4L remaining for 10k RP bonus (₹10,500 value).</div><div class="hzdate">June 30, 2026</div></div></div>
-    <div class="hzitem"><div class="hzdot" style="background:var(--gold)"></div><div><div class="hztext"><strong>TravelOne 3.5% cashback expires.</strong> Premier takes over generic forex from July.</div><div class="hzdate">June 2026</div></div></div>
-    <div class="hzitem"><div class="hzdot" style="background:var(--red)"></div><div><div class="hztext"><strong>TravelOne renewal.</strong> With Premier live, evaluate closure/downgrade.</div><div class="hzdate">August 2026</div></div></div>
-    <div class="hzitem"><div class="hzdot" style="background:var(--accent)"></div><div><div class="hztext"><strong>UK trip.</strong> Premier Hopper (36X hotels = 75.6% gross). FHR for London hotel.</div><div class="hzdate">July 2026</div></div></div>
-    <div class="hzitem"><div class="hzdot" style="background:var(--amber)"></div><div><div class="hztext"><strong>Axis Group A 30k.</strong> KrisFlyer 1:2 for J/F class. Deploy by Dec 31, 2026.</div><div class="hzdate">Dec 2026</div></div></div>
+    ${hz('var(--red)',`<strong>Axis Group A resets.</strong> Use remaining 30k EM (KrisFlyer/JAL/Flying Blue/Air India 1:2) before reset.`,`31 Dec 2026 · ${daysLeft('2026-12-31')} days`)}
+    ${hz('var(--red)',`<strong>DCB quarterly milestone.</strong> ${lakhs(msRemaining(MS_DEFS[0]))} left for 10k RP.`,`${QTR.end} · ${daysLeft(QTR.end)} days`)}
+    ${hz('var(--gold)',`<strong>Amex Reward Xcelerator ends.</strong> Air India 10X on Plat Charge — verify before using.`,'31 Jan 2027')}
+    ${hz('var(--amber)',`<strong>Amex Plat Travel lounge rule.</strong> Needs ₹1L spend per quarter to unlock next quarter's 2 visits.`,'Quarterly from 1 Oct 2026')}
+    ${hz('var(--accent)',`<strong>TravelOne renewal decision</strong> recorded as pending. Confirm points merge with RM before any closure.`,'')}
+    ${hz('var(--muted)',`<strong>Watch:</strong> Axis IndiGo BluChip intro ratio (1:2) can be pulled without notice; Amex Hilton/Virgin uplift not confirmed as permanent.`,'')}
   </div>`;
 }
 
 // ══════════════════════════════════════════════════════════
 // CHAT TAB
 // ══════════════════════════════════════════════════════════
-const CHIPS=['DCB milestone boost?','Premier Hopper vs TravelOne?','UK trip July?','GetYourGuide MCC?','Klook post-June?','Finnair Avios chain?','Group A deploy?','MRCC monthly target?'];
+// ══════════════════════════════════════════════════════════
+// AI CHAT — Claude Haiku 5.5, streaming, optional web search
+// ══════════════════════════════════════════════════════════
+const AI_MODEL='claude-haiku-5-5';
+const CHIPS=['Best route to Qatar Avios?','Use Axis Group A before 31 Dec?','DCB milestone status','Klook in SGD — which card?','Amazon voucher: MRCC or Plat?','Cheapest path to 60k KrisFlyer?','Fuel this month?','Any new devaluations?'];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function mdRender(src){
+  const blocks=[]; let t=esc(src).replace(/```[\w-]*\n?([\s\S]*?)```/g,(_,c)=>{blocks.push(`<pre class="mdpre">${c}</pre>`);return `\u0000${blocks.length-1}\u0000`;});
+  const lines=t.split('\n'), out=[]; let i=0;
+  const inline=s=>s.replace(/`([^`]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+  while(i<lines.length){
+    const l=lines[i];
+    if(/^\s*\|.*\|\s*$/.test(l) && i+1<lines.length && /^\s*\|[\s:|-]+\|\s*$/.test(lines[i+1])){
+      const row=r=>r.trim().replace(/^\||\|$/g,'').split('|').map(c=>inline(c.trim()));
+      let h=`<table class="mdt"><tr>${row(l).map(c=>`<th>${c}</th>`).join('')}</tr>`; i+=2;
+      while(i<lines.length && /^\s*\|.*\|\s*$/.test(lines[i])){ h+=`<tr>${row(lines[i]).map(c=>`<td>${c}</td>`).join('')}</tr>`; i++; }
+      out.push(h+'</table>'); continue;
+    }
+    if(/^\s*[-*•]\s+/.test(l)){ let h='<ul class="mdl">'; while(i<lines.length && /^\s*[-*•]\s+/.test(lines[i])){ h+=`<li>${inline(lines[i].replace(/^\s*[-*•]\s+/,''))}</li>`; i++; } out.push(h+'</ul>'); continue; }
+    if(/^\s*\d+[.)]\s+/.test(l)){ let h='<ol class="mdl">'; while(i<lines.length && /^\s*\d+[.)]\s+/.test(lines[i])){ h+=`<li>${inline(lines[i].replace(/^\s*\d+[.)]\s+/,''))}</li>`; i++; } out.push(h+'</ol>'); continue; }
+    const hm=l.match(/^#{1,4}\s+(.*)/); if(hm){ out.push(`<div class="mdh">${inline(hm[1])}</div>`); i++; continue; }
+    out.push(l.trim()?inline(l):'<br>'); i++;
+  }
+  return out.join('\n').replace(/\n(?!<)/g,'<br>').replace(/\u0000(\d+)\u0000/g,(_,n)=>blocks[+n]);
+}
+
 function reply(q){
   q=q.toLowerCase();
-  if(q.match(/dcb.*milestone|milestone.*dcb|quarterly|8%|11%/)){
-    const def=MS_DEFS[0]; const boost=msBoost(def); const eff=msEffRate(def);
-    return `<strong>DCB Quarterly Milestone — current status:</strong><br><br>Spent: ${lakhs(MS[def.id])} of ${lakhs(def.threshold)}<br>Remaining: <strong>${lakhs(msRemaining(def))}</strong><br>Milestone value: ₹${def.rewardValue.toLocaleString()} (10k RP → Accor 2:1)<br><br>Boost on remaining spend: <strong>+${boost.toFixed(1)}%</strong><br>Effective rate: <strong>${eff.rate.toFixed(1)}%</strong> (3.5% base + ${boost.toFixed(1)}% milestone)<br><br>⏰ ${daysLeft('2026-06-30')} days remaining in cycle. Update spend on the 🎯 Miles tab.`;
+  const prog=TX_PROG.find(p=>q.includes(p.short.toLowerCase())||q.includes(p.id.toLowerCase()+' ')||q.includes(p.name.toLowerCase().split(' ')[0]));
+  if(prog && !/milestone/.test(q)){
+    const r=[]; TX_CUR.forEach(c=>txPaths(c.id).filter(p=>p.to===prog.id).forEach(p=>r.push(p)));
+    r.sort((a,b)=>b.value-a.value);
+    if(r.length) return `**Routes to ${prog.name}** (₹/bank pt)\n`+r.slice(0,5).map(p=>`- ${TX_NAME(p.from)} → `+p.edges.map(e=>`${ratioLbl(e)} ${TX_NAME(e.t)}`).join(' → ')+` — **₹${p.value.toFixed(2)}**`).join('\n')+`\n\nFull map on the 🔀 Routes tab.`;
   }
-  if(q.match(/mrcc.*monthly|monthly.*bonus|4.*txn|transaction.*bonus/))
-    return `<strong>MRCC Monthly Bonus:</strong><br><br>4 transactions ≥ ₹1,500 → 1,000 bonus MR → ₹1,500 value at ₹1.5 CPP.<br><br>Boost per qualifying transaction: +25% effective rate on that ₹1,500 spend.<br><br>Track on 🎯 Miles tab. ${MS[MS_DEFS[5].id]}/4 txns done this month.`;
-  if(q.match(/premier.*hopper|hopper.*premier|75|36 pt/))
-    return `<strong>HSBC Premier Hopper — your #1 earner:</strong><br><br>🏨 Hotels: 36 pts/₹100 → Accor ALL → <strong>₹75.6/₹100</strong><br>✈️ Flights: 18 pts/₹100 → <strong>₹37.8/₹100</strong><br><br>18k pts/month cap shared. Hotels earn 2× faster — allocate cap to hotels.`;
-  if(q.match(/uk|july.*2026|london/))
-    return `<strong>UK trip July 2026:</strong><br><br>✈️ Flights → Premier Hopper (37.8%)<br>🏨 Hotels → Premier Hopper (75.6%) 🚀<br>🌍 Other forex → Premier (0.99% markup)<br>🏧 ATM → IDFC WOW<br><br>Consider Amex Plat Charge FHR for London hotel.`;
-  if(q.match(/getyourguide|7991/))
-    return `<strong>GetYourGuide = MCC 7991 (Entertainment)</strong><br><br>Premier + TravelOne Hopper do NOT apply. Use <strong>Amex Plat Charge</strong> (3X MR = ~7.12% net).<br><br>Klook=4722 ✅ · GetYourGuide=7991 ❌ — always verify MCC.`;
-  if(q.match(/klook.*post|klook.*june|klook.*july/))
-    return `Post-June 2026 for Klook: TravelOne cashback expires. Amex Plat Charge (~7.12%) > Premier base (~5.1%). Switch card from July.`;
-  if(q.match(/klook|4722/))
-    return `Klook = MCC 4722 → TravelOne accelerated rate applies → ~7.67% net (while cashback active through June). Post-June: Amex Plat Charge wins.`;
-  if(q.match(/finnair|avios chain/))
-    return `<strong>DCB → Finnair → BA → Qatar:</strong><br>All 1:1, instant, same-day. Doubles Avios vs DCB→Qatar direct (2:1). One-time Finnair–BA link required.`;
-  if(q.match(/group a|30.?000|krisflyer|sq/))
-    return `<strong>Group A (30k/yr):</strong> SQ KrisFlyer 1:2 + Qantas 1:2. Deploy by Dec 31, 2026 for J/F class. SQ J class Europe ~67,500 miles.`;
-  return `<strong>Quick routing (May 2026):</strong><br><br>🏨 Portal hotels → Premier Hopper (75.6%)<br>✈️ Portal flights → Premier Hopper (37.8%)<br>🛒 INR spend → DCB Metal (~${msEffRate(MS_DEFS[0]).rate.toFixed(1)}% with milestone)<br>🌍 Generic forex → Premier (~5.1%)<br>🎪 GetYourGuide → Amex Plat Charge<br>🎫 Klook → TravelOne (⚡ till June)<br>🏧 ATM → IDFC WOW<br><br>Check 🎯 Miles tab for live milestone rates.`;
+  if(/dcb|milestone|quarter/.test(q)){ const d=MS_DEFS[0], e=msEffRate(d);
+    return `**DCB quarterly (${d.period})**\n- Spent ${lakhs(MS[d.id])} of ${lakhs(d.threshold)} · ${lakhs(msRemaining(d))} left\n- Effective rate on remaining spend: **${e.rate.toFixed(1)}%**\n- ${daysLeft(d.deadline)} days left`; }
+  if(/fuel/.test(q)) return `**Fuel:** MRCC until the 4 × ₹1,500 bonus is done (${MS.mrcc_mo}/4), then **Amex Plat Charge** 5 MR/₹100 (~3.5%, 5k MR/month cap). Premier, TravelOne, DCB and Atlas earn zero.`;
+  if(/klook|4722/.test(q)) return `**Klook (MCC 4722):** INR-billed → **TravelOne 8.4%**. Foreign-currency billed → **Premier ~5.1%** (TravelOne ~4.3% after 4.13% markup).`;
+  if(/voucher|amazon|shopwise|gyftr/.test(q)) return `**Vouchers:** DCB GYFTR 3X (~10%) until ~₹45K/month, then Plat Charge ShopWise 5X (8.75% Nykaa, ~7% Amazon after 1.77% fee). Keep MRCC for non-voucher spend to hit ₹20K.`;
+  if(/group a|30.?k|atlas/.test(q)) return `**Axis Group A** (30,000 EM/yr, resets 1 Jan — ${daysLeft('2026-12-31')} days): KrisFlyer, JAL, Flying Blue, Air India, Aeroplan, United, Turkish at 1:2. Avoid Accor/BA/Qatar/Asia Miles/Finnair at 2:1.`;
+  return `**Quick routing (${DATA_ASOF})**\n- Portal hotels → Premier Hopper (75.6%)\n- Portal flights → Premier Hopper (37.8%)\n- Air India → Plat Charge Xcelerator (17.5%)\n- Direct airline/hotel → Atlas (16%)\n- Vouchers → DCB GYFTR (~10%)\n- General INR → Premier 6.3% / DCB + milestone\n- Forex → Premier (~5.1%)\n- Overseas ATM → IDFC WOW`;
 }
+
+function buildSystemPrompt(){
+  const strip=h=>String(h).replace(/<br\s*\/?>/g,' ').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim();
+  const msSnap=MS_DEFS.map(d=>{ const e=msEffRate(d), rem=msRemaining(d);
+    return d.type==='transaction' ? `${d.card} ${d.name}: ${MS[d.id]}/4 txns (${d.period})`
+      : `${d.card} ${d.name}: ${lakhs(MS[d.id])}/${lakhs(d.threshold)}, ${rem>0?lakhs(rem)+' left':'DONE'}, eff ${e.rate.toFixed(1)}%, ends ${d.deadline}`; }).join(' | ');
+  const loy=(typeof PROGRAMS!=='undefined'?PROGRAMS:[]).map(p=>`${p.name}: ${p.status}`).join('; ');
+  const stat=`You are CardIQ, Romil's personal credit-card strategy assistant for India. Data in this prompt was last verified ${DATA_ASOF}.
+STYLE: concise and numeric. Lead with the answer. Show net return after forex markup (incl. 18% GST) and portal fees; say gross vs net. Markdown: short bullets, **bold** key numbers, a small table when comparing ≥3 options. ~180 words unless asked for more.
+RULES: Portal multipliers replace base earn (not additive). Milestone spend counts even on zero-earn categories. Anchors: Accor ₹2.1, KrisFlyer ₹1.6, HDFC RP ₹1, Amex MR ₹0.7, Bonvoy ₹0.8. Caps: Atlas Group A 30k EM/yr shared, Group B 1.2L; HSBC Hopper 18k accelerated pts/mo shared Premier+TravelOne; DCB SmartBuy 10k RP/mo incl. 3k voucher sub-cap; Plat Charge fuel 5k MR/mo. Accor is NOT an Amex India partner. Flag figures that need re-verification. Use web_search (when available) for offers, devaluations or anything that may have changed after ${DATA_ASOF}; cite sources.
+CARDS:
+${CARDS.map(c=>`- ${c.name}: ${c.earn.map(e=>`${e.c} ${e.r} ${e.u}`).join('; ')}. ${strip(c.info)}`).join('\n')}
+- IDFC First WOW: overseas ATM only — 0% forex, ₹199+GST flat, 45-day interest-free.
+- Seldom used: ICICI Amazon Pay, ICICI Platinum, HDFC Tata Neu Infinity.
+ROUTING BY CATEGORY:
+${CATS.map(c=>`- ${c.n}: ${c.best} (${c.bsub}). ${c.why} Caveat: ${c.cav}`).join('\n')}
+TRANSFER GRAPH:
+${txPromptTable()}
+LOYALTY STATUS: ${loy}`;
+  return [{type:'text',text:stat,cache_control:{type:'ephemeral'}},{type:'text',text:`Today: ${new Date().toDateString()}. LIVE MILESTONES: ${msSnap}`}];
+}
+
 let chatInited=false;
-let chatHistory=[];
+let chatHistory=[]; try{ chatHistory=JSON.parse(localStorage.getItem('ciq_chat')||'[]'); }catch(e){}
+function saveChat(){ try{ localStorage.setItem('ciq_chat',JSON.stringify(chatHistory.slice(-30))); }catch(e){} }
+const webOn=()=>localStorage.getItem('ciq_web')!=='0';
+
 function buildChat(){
-  if(chatInited) return;
-  chatInited=true;
-  // Add key button to chat header
-  const hd=document.querySelector('.chat-panel-hd');
-  if(hd){
-    const kb=document.createElement('button');
-    kb.className='key-icon-btn';
-    kb.title='Set Anthropic API key';
-    kb.innerHTML='🔑';
-    kb.onclick=()=>showApiModal('ciq_anthropic_key','Anthropic API Key','Enter your key from console.anthropic.com to enable AI chat (claude-haiku-4-5). Stored locally on device only.','sk-ant-…',null);
-    hd.insertBefore(kb, hd.querySelector('.chat-close'));
-  }
-  // Add quick chips above the message list
-  const cl=document.getElementById('cl');
-  const chipDiv=document.createElement('div');
-  chipDiv.className='chiprow';
-  chipDiv.style.cssText='display:flex;gap:7px;overflow-x:auto;padding:4px 0 8px;flex-shrink:0;margin-bottom:4px';
-  chipDiv.innerHTML=CHIPS.map(c=>`<button class="chip" onclick="chipq('${c}')">${c}</button>`).join('');
+  if(chatInited) return; chatInited=true;
+  const hd=document.querySelector('.chat-panel-hd'), close=hd.querySelector('.chat-close');
+  const mk=(html,title,fn,cls='')=>{ const b=document.createElement('button'); b.className='key-icon-btn '+cls; b.title=title; b.innerHTML=html; b.onclick=fn; hd.insertBefore(b,close); return b; };
+  const grp=document.createElement('div'); grp.className='chat-hd-btns';
+  const wb=mk('🌐','Web search on/off',()=>{ localStorage.setItem('ciq_web',webOn()?'0':'1'); wb.classList.toggle('on',webOn()); botmsg(webOn()?'Web search **on** — I\'ll check live sources when useful.':'Web search **off** — answers from CardIQ data only (cheaper, faster).'); }, webOn()?'on':'');
+  mk('🗑','Clear chat',()=>{ chatHistory=[]; saveChat(); document.getElementById('cl').innerHTML=''; greet(); });
+  mk('🔑','Set Anthropic API key',()=>showApiModal('ciq_anthropic_key','Anthropic API Key',`Paste a key from console.anthropic.com to enable live chat (${AI_MODEL}). Stored only in this browser — never in the code or on GitHub. Tip: give the key a monthly spend limit.`,'sk-ant-…',()=>botmsg('Key saved ✅ Ask me anything.')));
+  const sub=document.createElement('div'); sub.className='chat-model'; sub.textContent=AI_MODEL+' · streaming';
+  hd.querySelector('.chat-panel-title').appendChild(sub);
+  const cl=document.getElementById('cl'), chipDiv=document.createElement('div');
+  chipDiv.className='chiprow'; chipDiv.innerHTML=CHIPS.map(c=>`<button class="chip" onclick="chipq(this.textContent)">${esc(c)}</button>`).join('');
   cl.before(chipDiv);
-  const hasKey=!!localStorage.getItem('ciq_anthropic_key');
-  botmsg("Hey Romil 👋 DCB quarterly is at "+lakhs(MS.dcb_q)+" ("+msEffRate(MS_DEFS[0]).rate.toFixed(1)+"% effective with milestone). "+(hasKey?"Ask me anything — AI powered.":"Ask me about routing, MCCs, caps, or transfer chains. Tap 🔑 to add your API key for AI answers."));
+  chatHistory.forEach(m=> m.role==='user'?usermsg(m.content,true):botmsg(mdRender(m.content),false,true));
+  if(!chatHistory.length) greet();
 }
-function chipq(t){document.getElementById('ci').value=t;send()}
-function botmsg(text,typing=false){
-  const cl=document.getElementById('cl'),d=document.createElement('div');d.className='mbot';
-  if(typing){d.id='typing';d.innerHTML=`<div class="mbub"><span class="typing"><span></span><span></span><span></span></span></div>`}
-  else{const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});d.innerHTML=`<div class="mbub">${text}</div><div class="mtime">${t}</div>`}
-  cl.appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'});return d;
+function greet(){
+  const hasKey=!!localStorage.getItem('ciq_anthropic_key'), d=MS_DEFS[0];
+  botmsg(mdRender(`Hey Romil 👋 DCB quarterly is at **${lakhs(MS[d.id])}** of ₹4L (${msEffRate(d).rate.toFixed(1)}% effective). Axis Group A resets in **${daysLeft('2026-12-31')} days**.\n\n`+(hasKey?'Ask me anything — live AI with your full card + transfer data.':'Tap 🔑 to add your Anthropic key for live answers. Until then I answer from built-in data.')));
 }
-function usermsg(text){
-  const cl=document.getElementById('cl'),d=document.createElement('div');d.className='muser';
-  d.innerHTML=`<div class="mbub">${text}</div><div class="mtime">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;
-  cl.appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'});
+function chipq(t){ document.getElementById('ci').value=t; send(); }
+function botmsg(html,typing=false,noScroll=false){
+  const cl=document.getElementById('cl'), d=document.createElement('div'); d.className='mbot';
+  if(typing){ d.innerHTML=`<div class="mbub"><span class="typing"><span></span><span></span><span></span></span></div>`; }
+  else{ const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); d.innerHTML=`<div class="mbub">${html.includes('<')?html:mdRender(html)}</div><div class="mtime">${t}</div>`; }
+  cl.appendChild(d); if(!noScroll) d.scrollIntoView({behavior:'smooth',block:'end'}); return d;
 }
+function usermsg(text,noScroll=false){
+  const cl=document.getElementById('cl'), d=document.createElement('div'); d.className='muser';
+  d.innerHTML=`<div class="mbub">${esc(text)}</div><div class="mtime">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;
+  cl.appendChild(d); if(!noScroll) d.scrollIntoView({behavior:'smooth',block:'end'});
+}
+let chatBusy=false;
 async function send(){
-  const inp=document.getElementById('ci'),text=inp.value.trim();if(!text)return;
-  inp.value='';inp.style.height='auto';usermsg(text);
-  const apiKey=localStorage.getItem('ciq_anthropic_key');
-  if(!apiKey){
-    const t=botmsg('',true);
-    setTimeout(()=>{t.remove();botmsg('Tap 🔑 above to add your Anthropic API key for AI answers.<br><br>Cached: '+reply(text));},400);
-    return;
-  }
-  const t=botmsg('',true);
+  const inp=document.getElementById('ci'), text=inp.value.trim(); if(!text||chatBusy) return;
+  inp.value=''; inp.style.height='auto'; usermsg(text);
+  if(!localStorage.getItem('ciq_anthropic_key')){ botmsg(mdRender(reply(text)+'\n\n*Built-in answer — tap 🔑 for live AI.*')); return; }
+  chatBusy=true;
+  const wrap=botmsg('',true), bub=wrap.querySelector('.mbub'); let raf=0, latest='';
+  const ui={ text:t=>{ latest=t; if(!raf) raf=requestAnimationFrame(()=>{ raf=0; bub.innerHTML=mdRender(latest)+'<span class="cursor">▍</span>'; document.getElementById('cl').scrollTop=1e9; }); },
+             status:s=>{ if(!latest) bub.innerHTML=`<span class="chat-status">${s}</span>`; } };
   try{
-    const resp=await callClaude(text);
-    t.remove();botmsg(resp);
+    const {text:out,sources}=await callClaudeStream(text,ui);
+    cancelAnimationFrame(raf);
+    bub.innerHTML=mdRender(out||'…')+(sources.length?`<div class="chat-src">${sources.slice(0,5).map((s,i)=>`<a href="${esc(s.url)}" target="_blank" rel="noopener">${i+1}. ${esc((s.title||s.url).slice(0,60))}</a>`).join('')}</div>`:'');
   }catch(err){
-    t.remove();
-    botmsg('⚠️ '+err.message+'<br><br>Cached: '+reply(text));
+    cancelAnimationFrame(raf);
+    bub.innerHTML=mdRender(`⚠️ ${err.message}\n\n**Built-in answer:**\n`+reply(text));
+  }finally{ chatBusy=false; const tm=document.createElement('div'); tm.className='mtime'; tm.textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); wrap.appendChild(tm); }
+}
+
+async function callClaudeStream(userText, ui){
+  const key=localStorage.getItem('ciq_anthropic_key'); if(!key) throw new Error('No API key — tap 🔑');
+  chatHistory.push({role:'user',content:userText}); saveChat();
+  let msgs=chatHistory.slice(-16).map(m=>({role:m.role,content:m.content}));
+  while(msgs.length&&msgs[0].role!=='user') msgs.shift();
+  let finalText=''; const sources=[];
+  for(let turn=0; turn<3; turn++){
+    const body={ model:AI_MODEL, max_tokens:1500, stream:true, system:buildSystemPrompt(), messages:msgs };
+    if(webOn()) body.tools=[{type:'web_search_20250305',name:'web_search',max_uses:3,user_location:{type:'approximate',country:'IN',timezone:'Asia/Kolkata'}}];
+    const r=await fetch('https://api.anthropic.com/v1/messages',{ method:'POST',
+      headers:{'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify(body) });
+    if(!r.ok){ let m=''; try{ const j=await r.json(); m=(j.error&&j.error.message)||''; }catch(e){}
+      if(r.status===401) m='API key rejected — tap 🔑 to update it.';
+      if(r.status===404) m=`Model "${AI_MODEL}" not available on this key. ${m}`;
+      if(r.status===429) m='Rate limited — try again in a moment.';
+      chatHistory.pop(); saveChat(); throw new Error(m||`API error ${r.status}`); }
+    const reader=r.body.getReader(), dec=new TextDecoder(); let buf='', stop=null; const blocks=[];
+    for(;;){
+      const {done,value}=await reader.read(); if(done) break;
+      buf+=dec.decode(value,{stream:true}); let i;
+      while((i=buf.indexOf('\n\n'))>=0){
+        const raw=buf.slice(0,i); buf=buf.slice(i+2);
+        const dl=raw.split('\n').filter(l=>l.startsWith('data:')).map(l=>l.slice(5).trim()).join('');
+        if(!dl) continue; let ev; try{ ev=JSON.parse(dl); }catch(e){ continue; }
+        if(ev.type==='content_block_start'){
+          const b=JSON.parse(JSON.stringify(ev.content_block));
+          if(b.type==='text') b.text=b.text||'';
+          if(b.type==='server_tool_use'){ b._json=''; ui.status('🔎 Searching the web…'); }
+          if(b.type==='web_search_tool_result') ui.status('📄 Reading sources…');
+          blocks[ev.index]=b;
+        } else if(ev.type==='content_block_delta'){
+          const b=blocks[ev.index], d=ev.delta; if(!b) continue;
+          if(d.type==='text_delta'){ b.text+=d.text; finalText+=d.text; ui.text(finalText); }
+          else if(d.type==='input_json_delta'){ b._json+=d.partial_json||''; }
+          else if(d.type==='citations_delta'){ (b.citations=b.citations||[]).push(d.citation); const c=d.citation||{}; if(c.url&&!sources.some(s=>s.url===c.url)) sources.push({url:c.url,title:c.title}); }
+        } else if(ev.type==='content_block_stop'){
+          const b=blocks[ev.index]; if(b&&b.type==='server_tool_use'){ try{ b.input=JSON.parse(b._json||'{}'); }catch(e){ b.input={}; } delete b._json; }
+        } else if(ev.type==='message_delta'){ stop=ev.delta&&ev.delta.stop_reason; }
+        else if(ev.type==='error'){ throw new Error((ev.error&&ev.error.message)||'Stream error'); }
+      }
+    }
+    if(stop==='pause_turn'){ msgs=[...msgs,{role:'assistant',content:blocks.filter(Boolean)}]; continue; }
+    break;
   }
+  chatHistory.push({role:'assistant',content:finalText||'…'}); saveChat();
+  return {text:finalText,sources};
 }
 // ══════════════════════════════════════════════════════════
 // NEWS DATA
 // ══════════════════════════════════════════════════════════
 const NEWS = [
   {
-    id:'ai_fest', hot:true,
-    title:'Air India Maharaja Club — Points Fest',
-    summary:'Up to 50% bonus Maharaja Points when converting from 100+ eligible partners. Register at airindia.com/maharaja-club/points-fest before transferring.',
+    id:'axis_sep', hot:true,
+    title:'Axis Travel EDGE reshuffle (23 Sep 2026)',
+    summary:'Accor back at 2:1, Cathay and Miles & More added, Hilton and Postcard in Group B, Club ITC removed. Air India, Flying Blue and Qantas moved into the 30k Group A cap at unchanged 1:2.',
     src:'Live From A Lounge', srcCls:'src-lfal',
-    url:'https://livefromalounge.com/air-india-points-fest-may-2026/',
-    date:'May 2026', expires:'May 31, 2026',
-    tags:['Live Offer','Airlines'],
-    warn:'⚠️ Axis Bank + HSBC India excluded from bonus. HDFC DCB eligible.',
-    impact:'🟢 High — use HDFC DCB to transfer to Maharaja Club this month for 50% more miles.',
+    url:'https://livefromalounge.com/axis-bank-travel-edge-rewards-reshuffle-2026/',
+    date:'Sep 2026', tags:['Devaluation','Airlines','Hotels'],
+    impact:'🔴 High — Group A is now crowded. Spend remaining 30k EM on KrisFlyer/JAL/Flying Blue/Air India before 31 Dec.',
   },
   {
-    id:'ac_aeroplan', hot:true,
-    title:'Air Canada Aeroplan — Up to 90% Bonus on Buy',
-    summary:'Targeted offer on buying Aeroplan points — ~₹1,380 per 1,000 pts at top tier. Per-transaction limit raised to 500,000 pts. Billed in CAD; no tax outside Canada.',
-    src:'The Double Dip', srcCls:'src-dip',
-    url:'https://doubledip.in/blog/air-canada-aeroplan-up-to-90-bonus-on-buying-points-may-2026',
-    date:'May 2026', expires:'May 31, 2026',
-    tags:['Live Offer','Buy Points','Airlines'],
-    impact:'🟡 Medium — only if you have Aeroplan redemptions planned.',
+    id:'amex_rerate', hot:false,
+    title:'Amex India: Hilton 1:1.5, Virgin 5:4',
+    summary:'From 18 Aug 2026 MR → Hilton went from 1:0.9 to 1:1.5 and MR → Virgin Points from 2:1 to 5:4. Not announced; may or may not be permanent.',
+    src:'Live From A Lounge', srcCls:'src-lfal',
+    url:'https://livefromalounge.com/american-express-membership-rewards-gets-a-rare-rerating-in-india-with-better-transfers-to-virgin-atlantic-and-hilton-honors/',
+    date:'Aug 2026', tags:['Airlines','Hotels','Strategy'],
+    impact:'🟢 Medium — Virgin is now the best MR airline exit on ratio. Check award pricing before moving.',
   },
   {
-    id:'ai_reval', hot:false,
-    title:'Air India Award Chart Revaluation — Full Analysis',
-    summary:'Significant changes to Maharaja Club redemption rates from April 2026. Some sweet spots removed; India–Europe rates adjusted. Read before your next AI redemption.',
-    src:'The Double Dip', srcCls:'src-dip',
-    url:'https://doubledip.in/blog/air-india-revaluation-april-2026',
-    date:'April 2026',
-    tags:['Airlines','Strategy'],
-    impact:'🔴 High — check this before redeeming any Maharaja Club points.',
+    id:'amex_list', hot:false,
+    title:'Amex India transfer list: Etihad gone',
+    summary:'Seven partners left: Marriott 1:1, Hilton, Virgin, and KrisFlyer/BA/Qatar/Asia Miles at 2:1. Etihad dropped 1 Jul 2026; Emirates still suspended.',
+    src:'Magnify', srcCls:'src-cm',
+    url:'https://magnify.club/guides/amex-india-transfer-partners/',
+    date:'Aug 2026', tags:['Devaluation','Airlines'],
+    impact:'🟡 Medium — Etihad now via HSBC 1:1, HDFC 2:1 or Atlas 1:2.',
   },
   {
-    id:'qatar_relief', hot:false,
-    title:'Qatar Privilege Club Tier Relief (Feb–May 2026)',
-    summary:'Tiers expiring Feb 28–May 31, 2026 may be extended if ≥90% of required Qpoints earned by renewal date. Standard thresholds otherwise unchanged.',
-    src:'Loyalty Lobby', srcCls:'src-ll',
-    url:'https://loyaltylobby.com/2026/03/29/qatar-airways-clarifies-privilege-club-tier-extensions-qualification-requirements-for-february-28-may-31-2026-3rd-update/',
-    date:'March 2026', expires:'May 31, 2026',
-    tags:['Airlines','Status'],
-    impact:'🟡 Low — check your QR Privilege Club account if tier was due to expire.',
+    id:'pt_deval', hot:false,
+    title:'Amex Platinum Travel devalued again',
+    summary:'From 10 Sep 2026 the ₹1.9L milestone pays nothing and ₹7L swaps 22,500 MR for a ₹20,000 Taj e-gift card. From 1 Oct, lounge visits need ₹1L spend in the prior quarter.',
+    src:'Live From A Lounge', srcCls:'src-lfal',
+    url:'https://livefromalounge.com/american-express-platinum-travel-card-gets-another-devaluation-inr-1-9-lakh-milestone-removed-inr-7-lakh-milestone-rewards-cut-lounge-access-gets-a-spend-condition/',
+    date:'Sep 2026', tags:['Devaluation'],
+    impact:'🔴 High — only ₹4L (10k MR) and ₹7L (Taj) tiers matter now. Milestones updated in 🎯.',
   },
   {
-    id:'accor_plat', hot:false,
-    title:'Accor Platinum Strategy 2026',
-    summary:'Complete guide to reaching ALL Platinum (60 nights / 14,000 status pts) and maximising value for Indian cardholders. Premier Hopper hotel bookings are now the most efficient earn path.',
-    src:'The Double Dip', srcCls:'src-dip',
-    url:'https://doubledip.in/blog/accor-platinum-2026',
-    date:'2026',
-    tags:['Hotels','Strategy'],
-    impact:'🟢 High — highly relevant. Premier Hopper hotels give 75.6% gross return toward Accor.',
+    id:'hdfc_voucher', hot:false,
+    title:'HDFC SmartBuy voucher cap: 3,000 RP/month',
+    summary:'Since 1 Jul 2026 GYFTR/Woohoo vouchers earn at most 3,000 accelerated RP/month, inside the 10k overall SmartBuy cap on DCB Metal. Hotels 10X and flights 5X untouched.',
+    src:'CardExpress', srcCls:'src-cm',
+    url:'https://cardexpress.in/articles/hdfc-smartbuy-voucher-rewards-capped-3000-devaluation-2026',
+    date:'Jul 2026', tags:['Devaluation','Strategy'],
+    impact:'🟡 Medium — DCB vouchers still ~10% up to ~₹45K/month; overflow to Plat Charge ShopWise.',
+  },
+  {
+    id:'accor_qr', hot:false,
+    title:'Accor → Qatar Avios improved to 2,000:1,500',
+    summary:'Accor ALL now converts 2,000 points to 1,500 Qatar Avios (was 1,000). Iberia stays 1:1, Finnair 2,000:1,300; most other airlines 2:1.',
+    src:'Accor ALL', srcCls:'src-ll',
+    url:'https://all.accor.com/allmobility/index.en.shtml',
+    date:'2026', tags:['Hotels','Airlines'],
+    impact:'🟡 Low — HSBC → Qatar direct (1:1) still beats HSBC → Accor → Qatar (0.75).',
+  },
+  {
+    id:'axis_indigo', hot:false,
+    title:'Axis adds IndiGo BluChip',
+    summary:'EDGE Miles → BluChip is 2:1 standard on Atlas with a 1:2 introductory row that Axis can withdraw without notice.',
+    src:'Live From A Lounge', srcCls:'src-lfal',
+    url:'https://livefromalounge.com/?p=44434',
+    date:'2026', tags:['Airlines'],
+    impact:'🟡 Low — only worth it while the intro ratio lasts (Group B cap).',
   },
   {
     id:'avios_india', hot:false,
-    title:'Why Avios is the Best Starting Point for Indian Travelers',
-    summary:'BA Avios is flexible, transferable from multiple Indian cards, and great for QR/IB/BA redemptions. DCB → Finnair → BA is the recommended transfer chain.',
+    title:'Why Avios is the best starting point for Indian travellers',
+    summary:'Avios move freely between BA, Qatar, Iberia and Finnair. DCB → Finnair 1:1 → BA → Qatar remains the cheapest HDFC route.',
     src:'The Double Dip', srcCls:'src-dip',
     url:'https://doubledip.in/blog/why-i-recommend-avios-to-every-indian-starting-with-points',
-    date:'2026',
-    tags:['Strategy'],
-    impact:'🟡 Medium — strategic read, especially for your DCB Finnair chain.',
+    date:'2026', tags:['Strategy'],
+    impact:'🟡 Medium — strategic read for your DCB Finnair chain.',
   },
 ];
 
@@ -1279,8 +1507,8 @@ const PROGRAMS = [
     nextTier:null,
     nextTierLabel:'Platinum is the highest tier',
     perks:['3 upgrade vouchers/yr','20kg extra baggage','Priority check-in & boarding','Star Alliance Gold benefits','Lounge access on AI flights'],
-    partners:'HDFC DCB (1:1), HSBC TravelOne (1:1), Amex Platinum, Axis Atlas (1:1)',
-    hotOffer:'🔥 Points Fest May 2026: 50% bonus via HDFC DCB transfers (Axis/HSBC excluded)',
+    partners:'Axis Atlas 1:2 (now Group A), HSBC Premier/TravelOne 1:1 (5-day TAT), HDFC DCB 2:1 · no Amex route',
+    hotOffer:'💡 Since 23 Sep 2026 Air India competes for the Atlas 30k Group A cap — HSBC 1:1 keeps it free.',
     lsKey:'loy_ai',
   },
   {
@@ -1297,7 +1525,7 @@ const PROGRAMS = [
     nextTierLabel:'Platinum: 60 nights or 14,000 status pts',
     maintainLabel:'Maintain Gold: 30 nights or 7,000 status pts/yr',
     perks:['Late checkout 4pm (Platinum)','Welcome drink','Priority check-in','Room upgrade when available','10% F&B discount'],
-    partners:'HSBC Premier Hopper 1:1 (75.6% gross), TravelOne 1:1, DCB SmartBuy 2:1',
+    partners:'HSBC Premier/TravelOne 1:1 (only 1:1 route left), HDFC DCB 2:1, Axis Atlas 2:1 (Group A, back Sep 2026) · no Amex route',
     hotOffer:'💡 Premier Hopper hotels = fastest path to Accor Platinum nights + points',
     lsKey:'loy_accor',
   },
@@ -1315,7 +1543,7 @@ const PROGRAMS = [
     nextTierLabel:'Ambassador: 100 nights + $23,000 spend',
     maintainLabel:'Maintain Titanium: 75 nights/yr. Status valid through Feb 2028.',
     perks:['Suite upgrades (select)','48hr Suite Night Guarantee','Lounge access','75% bonus pts','Choice benefit','Your24 checkout'],
-    partners:'Amex Platinum Charge (direct), HSBC TravelOne (1:1), Atlas → ITC → Marriott (Group B)',
+    partners:'Amex MR 1:1, HSBC Premier/TravelOne 1:1, HDFC DCB 2:1 · Axis removed (Apr 2026); ITC chain dead',
     hotOffer:'💡 Marriott Titanium status valid through Feb 2028 — soft landing if not requalified.',
     lsKey:'loy_marriott',
   },
@@ -1332,7 +1560,7 @@ const PROGRAMS = [
     nextTier:'Elite Silver',
     nextTierLabel:'Elite Silver: 25,000 Elite miles in 12 months',
     perks:['Earn miles on SQ, SilkAir, Scoot','Partner hotel/car transfers','Best J/F class award redemptions for Indians'],
-    partners:'Axis Atlas 1:2 (Group A cap, best path), HDFC DCB 1:1, HSBC Premier/TravelOne 1:1, Amex Plat',
+    partners:'Axis Atlas 1:2 (Group A), HDFC DCB 1:1 (2–3 days), HSBC 1:1 (~1 day), Amex MR 2:1, Marriott 3:1',
     hotOffer:'💡 Axis Atlas → KrisFlyer 1:2 = 10 miles/₹100 on airline MCC. Best value: SQ J class to Europe (~67.5k miles).',
     lsKey:'loy_kf',
   },
@@ -1349,7 +1577,7 @@ const PROGRAMS = [
     nextTier:'Bronze / Silver',
     nextTierLabel:'Bronze: 300 tier pts · Silver: 600 tier pts',
     perks:['Avios shared pool with QR, Iberia, Aer Lingus','Oneworld partner benefits with status','Short-haul India redemptions'],
-    partners:'DCB → Finnair 1:1 → BA Avios 1:1 (instant, same-day), HSBC TravelOne 1:1, Amex Plat',
+    partners:'HSBC 1:1, DCB → Finnair 1:1 → BA 1:1, DCB/Amex direct 2:1, Axis Atlas 2:1',
     hotOffer:'💡 DCB → Finnair → BA chain doubles Avios yield vs DCB → Qatar direct (2:1).',
     lsKey:'loy_avios',
   },
@@ -1366,8 +1594,8 @@ const PROGRAMS = [
     nextTier:'Silver',
     nextTierLabel:'Silver: 150 Qpoints · Gold: 270 · Platinum: 600',
     perks:['Avios shared with BA / Iberia','Al Maha lounge DOH (Platinum)','Oneworld Gold (Platinum = Oneworld Emerald)'],
-    partners:'HSBC TravelOne → Qatar 1:1, DCB → Finnair → BA → Qatar (all 1:1 instant)',
-    hotOffer:'ℹ️ Tier relief active through May 31, 2026 if your tier was expiring — check your account.',
+    partners:'HSBC 1:1, DCB → Finnair → BA → Qatar 1:1, Accor → Qatar 2,000:1,500, Amex/DCB/Atlas direct 2:1',
+    hotOffer:'💡 Accor → Qatar improved to 2,000:1,500 in 2026 — still below HSBC direct 1:1.',
     lsKey:'loy_qr',
   },
   {
@@ -1395,7 +1623,7 @@ const PROGRAMS = [
 let activeFilter = 'All';
 function buildNews(){
   const el=document.getElementById('screen-news');
-  const filters=['All','Live Offers','Airlines','Hotels','Strategy'];
+  const filters=['All','Devaluation','Airlines','Hotels','Strategy'];
   const chips=filters.map(f=>`<div class="fchip${f==='All'?' active':''}" onclick="filterNews('${f}',this)">${f==='Live Offers'?'🔥 ':''}${f}</div>`).join('');
 
   const cards=NEWS.map(n=>{
@@ -1428,7 +1656,7 @@ function buildNews(){
   <a class="source-link" href="https://livefromalounge.com" target="_blank"><div><div class="source-link-name">Live From A Lounge</div><div class="source-link-url">livefromalounge.com</div></div><span style="color:var(--muted)">→</span></a>
   <a class="source-link" href="https://cardmaven.in" target="_blank"><div><div class="source-link-name">Card Maven</div><div class="source-link-url">cardmaven.in</div></div><span style="color:var(--muted)">→</span></a>
   <a class="source-link" href="https://technofino.in" target="_blank"><div><div class="source-link-name">TechnoFino</div><div class="source-link-url">technofino.in</div></div><span style="color:var(--muted)">→</span></a>
-  <div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">Last refreshed: May 30, 2026</div>`;
+  <div style="font-size:11px;color:var(--muted);margin-top:10px;text-align:center">Last refreshed: ${DATA_ASOF}</div>`;
 }
 
 function filterNews(tag, el){
@@ -1602,58 +1830,6 @@ function closeApiModal(){
 document.getElementById('am-input').addEventListener('keydown',e=>{if(e.key==='Enter')saveApiModal();});
 
 // ══════════════════════════════════════════════════════════
-// CLAUDE API
-// ══════════════════════════════════════════════════════════
-function buildSystemPrompt(){
-  const msSnap=MS_DEFS.map(d=>{
-    const e=msEffRate(d),rem=msRemaining(d);
-    return d.type==='transaction'
-      ?`${d.card} ${d.name}: ${MS[d.id]}/4 txns, ${e.done?'DONE':e.rate.toFixed(0)+'% eff'}`
-      :`${d.card} ${d.name}: ${lakhs(MS[d.id])}/${lakhs(d.threshold)}, ${rem>0?lakhs(rem)+' left':'DONE'}, ${e.rate.toFixed(1)}% eff`;
-  }).join(' | ');
-  return `You are CardIQ, a credit card strategy assistant for Romil's Indian wallet. Be concise and specific.
-
-CARDS: HSBC Premier (36X Hopper hotels=75.6% | 18X flights=37.8% | 3pts base | 0.99% FX | 18k pts/mo cap | Accor/AI/Qatar 1:1) · Axis Atlas (5 EM/₹100 hotel+airline MCCs | KrisFlyer 1:2 | 30k Group A/yr | 2 EM online | 4.13% FX) · DCB Metal HDFC Diners (3.33 RP/₹100 base | 10X SmartBuy hotels | Accor 2:1 | ₹4L quarterly milestone | Finnair 1:1 chain) · HSBC TravelOne (24X Hopper hotels=50.4% | 3.5% FX cashback EXPIRES June 2026) · Amex Plat Charge (3X MR intl | FHR hotels | best for MCC 7991 GetYourGuide) · Amex Plat Travel (₹1.9L/₹4L/₹7L milestones) · Amex MRCC (10 MR/₹100 Reward Multiplier portal | 4 txns ≥₹1.5k = 1000 bonus MR/mo) · IDFC WOW (overseas ATM only | 0% FX)
-
-VALUATIONS: Accor ALL ₹2.1/pt · KrisFlyer ₹1.6 CPP · Amex MR ₹1.5 CPP · Marriott ₹0.8 CPP
-
-MILESTONES (live state): ${msSnap}
-
-LOYALTY: Accor ALL Gold (30/60 nights to Platinum) · Marriott Titanium Elite (75/100 nights, valid Feb 2028) · Air India Maharaja Platinum · KrisFlyer Member · BA Avios Member · Qatar Privilege Member · Finnair Plus
-
-TOP ROUTES: Portal hotels→Premier Hopper (75.6%) · Portal flights→Premier Hopper (37.8%) · INR spends→DCB+milestone · Forex generic→Premier (5.1%) · GetYourGuide (MCC 7991)→Amex Plat · Klook (MCC 4722)→TravelOne till June · Direct airline/hotel MCC→Axis Atlas · Overseas ATM→IDFC WOW
-
-Use web_search for current offers, news, or promotions. Answer in 2-4 short paragraphs max. Use HTML bold tags for key numbers.`;
-}
-
-async function callClaude(userMsg){
-  const key=localStorage.getItem('ciq_anthropic_key');
-  if(!key) throw new Error('No API key — tap 🔑 to add');
-  chatHistory.push({role:'user',content:userMsg});
-  const makeBody=(withSearch)=>({
-    model:'claude-haiku-4-5-20251001',
-    max_tokens:1024,
-    system:buildSystemPrompt(),
-    ...(withSearch?{tools:[{type:'web_search_20250305',name:'web_search'}]}:{}),
-    messages:chatHistory.slice(-12)
-  });
-  const doReq=async(body)=>{
-    const r=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify(body)
-    });
-    if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.error?.message||`API ${r.status}`);}
-    return r.json();
-  };
-  let data=await doReq(makeBody(true));
-  if(data.stop_reason==='tool_use') data=await doReq(makeBody(false));
-  const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('')||'…';
-  chatHistory.push({role:'assistant',content:text});
-  return text;
-}
-
-// ══════════════════════════════════════════════════════════
 // GMAIL INTEGRATION
 // ══════════════════════════════════════════════════════════
 let _gmailTxns=[];
@@ -1742,8 +1918,8 @@ function _parseLine(subj,from,date){
   const src=(from+' '+subj).toLowerCase();
   let card='',cardId='',cardShort='';
   if(/hdfc|diners|dcb/.test(src)){card='DCB Metal';cardId='dcb_q';cardShort='DCB';}
-  else if(/mrcc|membership reward/.test(src)){card='Amex MRCC';cardId='mrcc_mo';cardShort='MRCC';}
-  else if(/amex|american express|platinum travel/.test(src)){card='Amex Plat Travel';cardId='amex_pt1';cardShort='Amex PT';}
+  else if(/mrcc|membership reward/.test(src)){card='Amex MRCC';cardId='mrcc_20k';cardShort='MRCC';}
+  else if(/amex|american express|platinum travel/.test(src)){card='Amex Plat Travel';cardId='amex_pt2';cardShort='Amex PT';}
   else if(/amex|american express/.test(src)){card='Amex';cardId='';cardShort='Amex';}
   else if(/hsbc/.test(src)){card='HSBC';cardId='';cardShort='HSBC';}
   else if(/axis/.test(src)){card='Axis';cardId='';cardShort='Axis';}
@@ -1803,15 +1979,351 @@ function applyGmailTransactions(){
     MS[id]=cur+amt;
     const inp=document.getElementById('msi-'+id);
     if(inp){inp.value=MS[id];updateMs(id,MS[id]);}
+    if(id==='amex_pt2'){ MS.amex_pt3=(MS.amex_pt3||0)+amt; const i3=document.getElementById('msi-amex_pt3'); if(i3){i3.value=MS.amex_pt3;updateMs('amex_pt3',MS.amex_pt3);} }
   });
+  saveMS();
   closeGmailSheet();
   const totalAmt=Object.values(totals).reduce((a,b)=>a+b,0);
   const sub=document.getElementById('gmail-scan-sub');
   if(sub) sub.textContent=`Applied ${sel.length} txn${sel.length!==1?'s':''} · ₹${totalAmt.toLocaleString('en-IN')} added`;
 }
 
+// ══════════════════════════════════════════════════════════
+// TRANSFER UNIVERSE — currencies, programs, ratios (checked 21 Nov 2026)
+// ratio = partner points received per 1 bank/program point
+// ══════════════════════════════════════════════════════════
+const TX_CUR = [
+  { id:'AX', name:'Axis EDGE Miles', short:'AXIS', cards:'Atlas', color:'#A78BFA', pos:[150,150],
+    note:'Group A 30,000 EM/yr shared · Group B 1,20,000 EM/yr · both reset 1 Jan · ₹199+GST per transfer · TAT ~1–10 working days' },
+  { id:'HD', name:'HDFC Reward Points', short:'HDFC', cards:'DCB Metal', color:'#60A5FA', pos:[850,150],
+    note:'No transfer cap noted · most partners instant · KrisFlyer 2–3 days · Air India a few hours' },
+  { id:'HS', name:'HSBC Reward Points', short:'HSBC', cards:'Premier · TravelOne', color:'#F87171', pos:[150,850],
+    note:'No cap · TAT ~1 day (Air India/Hainan 5, JAL 10) · Premier and TravelOne pools are separate' },
+  { id:'AM', name:'Amex Membership Rewards', short:'AMEX', cards:'Plat Charge · Plat Travel · MRCC', color:'#34D399', pos:[850,850],
+    note:'One MR pool across your 3 Amex cards · 3–5 working days · Etihad dropped 1 Jul 2026 · no Accor' },
+];
+// v = default ₹ value per point. anchor:true = your stated anchor; others are editable estimates
+const TX_PROG = [
+  {id:'SQ', name:'Singapore KrisFlyer', short:'KrisFlyer', t:'air', v:1.6, anchor:true, al:'Star'},
+  {id:'AI', name:'Air India Maharaja Club', short:'Air India', t:'air', v:1.0, al:'Star'},
+  {id:'AC', name:'Air Canada Aeroplan', short:'Aeroplan', t:'air', v:1.3, al:'Star'},
+  {id:'UA', name:'United MileagePlus', short:'United', t:'air', v:1.1, al:'Star'},
+  {id:'TK', name:'Turkish Miles&Smiles', short:'Turkish', t:'air', v:1.2, al:'Star'},
+  {id:'TG', name:'Thai Royal Orchid Plus', short:'Thai ROP', t:'air', v:1.0, al:'Star'},
+  {id:'ET', name:'Ethiopian ShebaMiles', short:'Ethiopian', t:'air', v:0.9, al:'Star'},
+  {id:'LH', name:'Lufthansa Miles & More', short:'Miles&More', t:'air', v:1.0, al:'Star'},
+  {id:'AV', name:'Avianca LifeMiles', short:'LifeMiles', t:'air', v:1.2, al:'Star'},
+  {id:'BR', name:'EVA Infinity MileageLands', short:'EVA', t:'air', v:1.1, al:'Star'},
+  {id:'BA', name:'British Airways Club (Avios)', short:'BA Avios', t:'air', v:1.25, al:'oneworld'},
+  {id:'QR', name:'Qatar Privilege Club (Avios)', short:'Qatar Avios', t:'air', v:1.25, al:'oneworld'},
+  {id:'AY', name:'Finnair Plus (Avios)', short:'Finnair', t:'air', v:1.25, al:'oneworld'},
+  {id:'IB', name:'Iberia Club (Avios)', short:'Iberia', t:'air', v:1.25, al:'oneworld'},
+  {id:'CX', name:'Cathay Asia Miles', short:'Asia Miles', t:'air', v:1.2, al:'oneworld'},
+  {id:'QF', name:'Qantas Frequent Flyer', short:'Qantas', t:'air', v:1.0, al:'oneworld'},
+  {id:'JL', name:'JAL Mileage Bank', short:'JAL', t:'air', v:1.3, al:'oneworld'},
+  {id:'FB', name:'Air France-KLM Flying Blue', short:'Flying Blue', t:'air', v:1.2, al:'SkyTeam'},
+  {id:'VN', name:'Vietnam Lotusmiles', short:'Lotusmiles', t:'air', v:0.8, al:'SkyTeam'},
+  {id:'EY', name:'Etihad Guest', short:'Etihad', t:'air', v:1.0, al:'—'},
+  {id:'EK', name:'Emirates Skywards', short:'Emirates', t:'air', v:1.0, al:'—'},
+  {id:'VS', name:'Virgin Atlantic (Virgin Points)', short:'Virgin', t:'air', v:1.3, al:'SkyTeam'},
+  {id:'HU', name:'Hainan Fortune Wings', short:'Hainan', t:'air', v:0.8, al:'—'},
+  {id:'AK', name:'AirAsia Rewards', short:'AirAsia', t:'air', v:0.6, al:'LCC'},
+  {id:'SG', name:'SpiceJet SpiceClub', short:'SpiceJet', t:'air', v:0.5, al:'LCC'},
+  {id:'IGO', name:'IndiGo BluChip', short:'IndiGo', t:'air', v:1.0, al:'LCC'},
+  {id:'ACC', name:'Accor ALL', short:'Accor ALL', t:'hotel', v:2.1, anchor:true},
+  {id:'MAR', name:'Marriott Bonvoy', short:'Marriott', t:'hotel', v:0.8, anchor:true},
+  {id:'HH', name:'Hilton Honors', short:'Hilton', t:'hotel', v:0.4},
+  {id:'IHG', name:'IHG One Rewards', short:'IHG', t:'hotel', v:0.45},
+  {id:'WY', name:'Wyndham Rewards', short:'Wyndham', t:'hotel', v:0.8},
+  {id:'RD', name:'Radisson Rewards', short:'Radisson', t:'hotel', v:0.35},
+  {id:'OR', name:'Orchid Rewards', short:'Orchid', t:'hotel', v:0.5},
+  {id:'PC', name:'The Postcard Sunshine Club', short:'Postcard', t:'hotel', v:1.0},
+  {id:'SHG', name:'Shangri-La Circle', short:'Shangri-La', t:'hotel', v:6.0},
+  {id:'ITC', name:'Club ITC', short:'Club ITC', t:'hotel', v:0.9},
+];
+const TX_NODE_NOTE = {
+  JL:'Your notes mention a JAL → Accor detour as a last resort; JAL\'s site only documents Accor → JAL (4,000 ALL = 2,000 miles). Ratio for JAL → Accor not verified, so it is not drawn.',
+  ACC:'Accor → airlines mostly 2:1. Better: Qatar 2,000 → 1,500 Avios, Iberia 1:1, Finnair 2,000 → 1,300. Flying Blue needs ALL × Flying Blue link.',
+  MAR:'Marriott → airlines 3:1, plus 5,000 bonus miles per 60,000 points (≈25% more in 60k blocks).',
+  HH:'Hilton → airlines is ~10:1 — not drawn (poor value).',
+  IHG:'IHG → airlines is ~5:1 — not drawn (poor value).',
+  BA:'Avios moves 1:1 between BA, Qatar, Iberia and Finnair once accounts are linked.',
+  QR:'Avios pool with BA/Iberia/Finnair. Accor top-ups also possible (Accor → Qatar 2,000:1,500).',
+  EK:'Amex India → Emirates suspended since May 2025. Reachable only via Accor (2:1) or Marriott (3:1).',
+  IGO:'Axis intro ratio 1:2 (standard 2:1) can be withdrawn without notice.',
+  ITC:'Removed from Axis in Sep 2026; still listed for HDFC at 2:1.',
+};
+const _E=[];
+function _e(f,t,r,m={}){ _E.push({f,t,r,...m}); }
+// Axis Atlas — Group A (30k EM/yr)
+['AI','FB','QF','SQ','UA','AC','TK','TG','JL','EY','ET','WY'].forEach(p=>_e('AX',p,2,{g:'A'}));
+[['ACC','Back Sep 2026 at 2:1 (was 1:2)'],['CX','Added Sep 2026'],['BA',''],['AY',''],['QR','Returned Jul 2026 at 2:1'],['VN','']].forEach(([p,n])=>_e('AX',p,0.5,{g:'A',st:'cut',note:n}));
+// Axis Atlas — Group B (1.2L EM/yr)
+[['HH','Added Sep 2026'],['IHG',''],['PC','Added Sep 2026'],['AK',''],['SG','']].forEach(([p,n])=>_e('AX',p,2,{g:'B',note:n}));
+_e('AX','LH',1,{g:'B',note:'Added Sep 2026 · own cap 2,00,000 miles/yr'});
+_e('AX','OR',1,{g:'B'}); _e('AX','RD',1,{g:'B'});
+_e('AX','IGO',0.5,{g:'B',st:'intro',note:'Standard 2:1 · intro 1:2 may be withdrawn'});
+// HDFC DCB Metal (PointsMath, 15 Aug 2026 + your SmartBuy check)
+['AK','AY','FB','VN','SG','IHG','RD','WY'].forEach(p=>_e('HD',p,1,{tat:'instant'}));
+_e('HD','SQ',1,{tat:'2–3 days'});
+['AC','AV','BA','CX','EY','QR','TG','TK','UA','ACC','ITC','MAR'].forEach(p=>_e('HD',p,0.5,{tat:'instant'}));
+_e('HD','AI',0.5,{tat:'few hours'});
+// HSBC Premier / TravelOne (HSBC T&C table)
+['FB','BA','EY','BR','SQ','QF','QR','TG','VN','ACC','IHG','MAR','WY'].forEach(p=>_e('HS',p,1,{tat:'~1 day'}));
+_e('HS','AI',1,{tat:'5 days'}); _e('HS','JL',1,{tat:'10 days'});
+_e('HS','AK',3,{tat:'~1 day',lbl:'1:3'});
+_e('HS','TK',0.5,{tat:'~1 day'}); _e('HS','UA',0.5,{tat:'~1 day'}); _e('HS','HU',0.5,{tat:'5 days'});
+_e('HS','SHG',0.2,{tat:'~1 day',lbl:'5:1'});
+// Amex India MR (18 Aug 2026)
+_e('AM','MAR',1,{tat:'3–5 wd'});
+_e('AM','HH',1.5,{tat:'3–5 wd',lbl:'1:1.5',st:'new',note:'Up from 1:0.9 on 18 Aug 2026'});
+_e('AM','VS',0.8,{tat:'3–5 wd',lbl:'5:4',st:'new',note:'Up from 2:1 on 18 Aug 2026'});
+['SQ','BA','QR','CX'].forEach(p=>_e('AM',p,0.5,{tat:'3–5 wd'}));
+// Program → program hops
+[['BA','QR'],['BA','IB'],['BA','AY'],['QR','IB']].forEach(([a,b])=>{ _e(a,b,1,{hop:true,note:'Avios pool'}); _e(b,a,1,{hop:true,note:'Avios pool'}); });
+_e('ACC','QR',0.75,{hop:true,lbl:'2000:1500',note:'Improved 2026'});
+_e('ACC','IB',1,{hop:true,lbl:'3000:3000'});
+_e('ACC','AY',0.65,{hop:true,lbl:'2000:1300'});
+['BA','CX','EK','EY','JL','AI','UA','AC'].forEach(p=>_e('ACC',p,0.5,{hop:true}));
+_e('ACC','FB',0.5,{hop:true,note:'Needs ALL × Flying Blue link'});
+['SQ','QR','BA','EK','EY','FB','UA','AC','JL','TK','CX','QF','AI','TG'].forEach(p=>_e('MAR',p,1/3,{hop:true,lbl:'3:1',note:'+5k bonus per 60k pts'}));
+const TX_EDGES=_E;
+
+// ── valuations (editable, persisted) ──
+function getVals(){
+  let o={}; try{ o=JSON.parse(localStorage.getItem('ciq_vals')||'{}'); }catch(e){}
+  const V={}; TX_PROG.forEach(p=>V[p.id]=(o[p.id]!=null?+o[p.id]:p.v)); return V;
+}
+function setVal(id,v){
+  let o={}; try{ o=JSON.parse(localStorage.getItem('ciq_vals')||'{}'); }catch(e){}
+  const n=parseFloat(v); if(isNaN(n)||n<0) return;
+  o[id]=n; try{ localStorage.setItem('ciq_vals',JSON.stringify(o)); }catch(e){}
+  if(RT.sel) rtPanel();
+}
+function ratioLbl(e){ if(e.lbl) return e.lbl; const r=e.r; const f=x=>(+x.toFixed(2)).toString(); return r>=1?`1:${f(r)}`:`${f(1/r)}:1`; }
+const TX_NAME = id => (TX_CUR.find(c=>c.id===id)||TX_PROG.find(p=>p.id===id)||{}).short||id;
+
+// ── path engine: all simple paths ≤3 transfers from a currency ──
+function txPaths(from, opts={}){
+  const hops = opts.hops!==false, out=[];
+  const adj={}; TX_EDGES.forEach(e=>{ if(e.hop&&!hops) return; (adj[e.f]=adj[e.f]||[]).push(e); });
+  const V=getVals();
+  (function dfs(node, path, seen, ratio){
+    (adj[node]||[]).forEach(e=>{
+      if(seen.has(e.t)) return;
+      const r=ratio*e.r, p=[...path,e];
+      out.push({ from, to:e.t, edges:p, ratio:r, value:r*(V[e.t]||0) });
+      if(p.length<3) dfs(e.t, p, new Set([...seen,e.t]), r);
+    });
+  })(from, [], new Set([from]), 1);
+  return out;
+}
+function txPrune(paths){
+  const sorted=[...paths].sort((a,b)=>b.value-a.value||a.edges.length-b.edges.length), kept=[];
+  sorted.forEach(p=>{ if(!kept.some(q=>q.from===p.from&&q.to===p.to&&q.value>=p.value-1e-9&&q.edges.length<=p.edges.length)) kept.push(p); });
+  return kept;
+}
+function txBestByDest(from, opts){
+  const best={}; txPaths(from,opts).forEach(p=>{ if(!best[p.to]||p.value>best[p.to].value) best[p.to]=p; });
+  return Object.values(best).sort((a,b)=>b.value-a.value);
+}
+
+// ══════════════════════════════════════════════════════════
+// ROUTES TAB — network graph
+// ══════════════════════════════════════════════════════════
+const RT={ built:false, sel:null, filter:'all', hops:true, tf:{x:0,y:0,k:1}, pos:{} };
+
+function rtLayout(){
+  // deterministic force layout; currencies pinned to corners
+  let seed=7; const rnd=()=>{ seed=(seed*9301+49297)%233280; return seed/233280; };
+  const N=[], idx={};
+  TX_CUR.forEach(c=>{ idx[c.id]=N.length; N.push({id:c.id,x:c.pos[0],y:c.pos[1],vx:0,vy:0,pin:true}); });
+  TX_PROG.forEach((p,i)=>{ const a=i/TX_PROG.length*Math.PI*2; idx[p.id]=N.length;
+    N.push({id:p.id,x:500+Math.cos(a)*260+rnd()*40,y:500+Math.sin(a)*260+rnd()*40,vx:0,vy:0}); });
+  const seenL=new Set(), L=[];
+  TX_EDGES.forEach(e=>{ const k=[e.f,e.t].sort().join('|'); if(seenL.has(k)) return; seenL.add(k); L.push({a:idx[e.f],b:idx[e.t],len:e.hop?120:300,k:e.hop?0.03:0.012}); });
+  for(let it=0;it<420;it++){
+    const alpha=1-it/420;
+    for(let i=0;i<N.length;i++) for(let j=i+1;j<N.length;j++){
+      const A=N[i],B=N[j]; let dx=B.x-A.x, dy=B.y-A.y, d2=dx*dx+dy*dy||1, d=Math.sqrt(d2);
+      let f=Math.min(9000/d2,6); if(d<58) f+= (58-d)*0.25;
+      dx/=d; dy/=d; A.vx-=dx*f; A.vy-=dy*f; B.vx+=dx*f; B.vy+=dy*f;
+    }
+    L.forEach(l=>{ const A=N[l.a],B=N[l.b]; const dx=B.x-A.x, dy=B.y-A.y, d=Math.sqrt(dx*dx+dy*dy)||1; const f=(d-l.len)*l.k;
+      A.vx+=dx/d*f; A.vy+=dy/d*f; B.vx-=dx/d*f; B.vy-=dy/d*f; });
+    N.forEach(n=>{ if(n.pin){n.vx=n.vy=0;return;}
+      n.vx+=(500-n.x)*0.004; n.vy+=(500-n.y)*0.004;
+      n.x+=n.vx*alpha*0.9; n.y+=n.vy*alpha*0.9; n.vx*=0.6; n.vy*=0.6;
+      n.x=Math.max(50,Math.min(950,n.x)); n.y=Math.max(50,Math.min(950,n.y)); });
+  }
+  N.forEach(n=>RT.pos[n.id]=[n.x,n.y]);
+}
+
+function rtVisible(id){
+  if(TX_CUR.some(c=>c.id===id)) return true;
+  const p=TX_PROG.find(x=>x.id===id); if(!p) return false;
+  return RT.filter==='all' || (RT.filter==='air'&&p.t==='air') || (RT.filter==='hotel'&&p.t==='hotel');
+}
+
+function buildRoutes(){
+  const el=document.getElementById('screen-routes');
+  if(RT.built){ return; }
+  RT.built=true;
+  rtLayout();
+  const opts=TX_PROG.map(p=>`<option value="${p.name}">`).join('');
+  el.innerHTML=`<div class="stitle">Transfer Universe</div>
+  <div class="rt-bar">
+    <button class="rt-f on" data-f="all" onclick="rtFilter('all',this)">All</button>
+    <button class="rt-f" data-f="air" onclick="rtFilter('air',this)">✈️ Airlines</button>
+    <button class="rt-f" data-f="hotel" onclick="rtFilter('hotel',this)">🏨 Hotels</button>
+    <button class="rt-f on" id="rt-hopbtn" onclick="rtToggleHops(this)">🔁 Hops</button>
+  </div>
+  <div class="rt-search-row"><input class="rt-search" id="rt-q" list="rt-dl" placeholder="Find a program… e.g. Qatar" onchange="rtFind(this.value)"><datalist id="rt-dl">${opts}</datalist><button class="rt-reset" onclick="rtReset()">⟲</button></div>
+  <div id="rt-wrap"><svg id="rt-svg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid meet"><g id="rt-vp"><g id="rt-edges"></g><g id="rt-lbls"></g><g id="rt-nodes"></g></g></svg>
+    <div class="rt-legend"><span><i style="background:#A78BFA"></i>Axis</span><span><i style="background:#60A5FA"></i>HDFC</span><span><i style="background:#F87171"></i>HSBC</span><span><i style="background:#34D399"></i>Amex</span><span><i class="dash"></i>hop</span></div>
+    <div class="rt-hint">Pinch / drag · tap a node</div>
+  </div>
+  <div id="rt-panel"></div>`;
+  rtDraw(); rtPanel(); rtBindGestures();
+}
+
+function rtDraw(){
+  const P=RT.pos, eg=document.getElementById('rt-edges'), ng=document.getElementById('rt-nodes');
+  const curColor=Object.fromEntries(TX_CUR.map(c=>[c.id,c.color]));
+  let eh=''; RT.geo={};
+  TX_EDGES.forEach((e,i)=>{
+    if(e.hop&&!RT.hops) return;
+    if(!rtVisible(e.f)||!rtVisible(e.t)) return;
+    const [x1,y1]=P[e.f],[x2,y2]=P[e.t];
+    const mx=(x1+x2)/2, my=(y1+y2)/2, dx=x2-x1, dy=y2-y1, off=e.hop?0.12:0.06;
+    const cx=mx-dy*off, cy=my+dx*off;
+    const col=e.hop?'#FBBF24':curColor[e.f]; RT.geo[i]=[x1,y1,cx,cy,x2,y2];
+    eh+=`<path class="rt-e${e.hop?' hop':''}${e.st==='cut'?' cut':''}" data-e="${i}" d="M${x1.toFixed(1)},${y1.toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}" stroke="${col}"/>`;
+  });
+  eg.innerHTML=eh;
+  const indeg={}; TX_EDGES.forEach(e=>{ if(!e.hop) indeg[e.t]=(indeg[e.t]||0)+1; });
+  let nh='';
+  TX_CUR.forEach(c=>{ const [x,y]=P[c.id];
+    nh+=`<g class="rt-n cur" data-id="${c.id}" transform="translate(${x.toFixed(1)},${y.toFixed(1)})"><circle r="40" fill="${c.color}" fill-opacity=".18" stroke="${c.color}" stroke-width="3"/><text class="rt-ct" y="5">${c.short}</text><text class="rt-cl" y="62">${c.cards}</text></g>`; });
+  TX_PROG.forEach(p=>{ if(!rtVisible(p.id)) return; const [x,y]=P[p.id]; const r=10+3*Math.sqrt(indeg[p.id]||0);
+    const shape=p.t==='hotel'?`<rect x="${-r}" y="${-r}" width="${2*r}" height="${2*r}" rx="6"/>`:`<circle r="${r}"/>`;
+    nh+=`<g class="rt-n ${p.t}${p.anchor?' anchor':''}" data-id="${p.id}" transform="translate(${x.toFixed(1)},${y.toFixed(1)})">${shape}<text class="rt-pl" y="${r+17}">${p.short}</text></g>`; });
+  ng.innerHTML=nh;
+  rtApplySel(); rtApplyTf();
+}
+
+function rtApplyTf(){ const t=RT.tf; document.getElementById('rt-vp').setAttribute('transform',`translate(${t.x},${t.y}) scale(${t.k})`); }
+
+function rtApplySel(){
+  const svg=document.getElementById('rt-svg'); if(!svg) return;
+  const lg=document.getElementById('rt-lbls'); lg.innerHTML='';
+  svg.classList.toggle('has-sel',!!RT.sel);
+  const hint=document.querySelector('.rt-hint'); if(hint) hint.textContent=RT.sel?`${TX_NAME(RT.sel)} · routes listed below ↓`:'Pinch / drag · tap a node';
+  svg.querySelectorAll('.rt-e.hl,.rt-n.hl,.rt-n.focus').forEach(x=>x.classList.remove('hl','focus'));
+  if(!RT.sel) return;
+  const id=RT.sel, isCur=TX_CUR.some(c=>c.id===id), edges=new Set(), nodes=new Set([id]);
+  if(isCur){
+    TX_EDGES.forEach((e,i)=>{ if(e.f===id&&rtVisible(e.t)){ edges.add(i); nodes.add(e.t); } });
+  } else {
+    txPrune(TX_CUR.flatMap(c=>txPaths(c.id,{hops:RT.hops}).filter(p=>p.to===id))).forEach(p=>p.edges.forEach(e=>{ edges.add(TX_EDGES.indexOf(e)); nodes.add(e.f); nodes.add(e.t); }));
+  }
+  let lh='';
+  edges.forEach(i=>{ const pe=svg.querySelector(`.rt-e[data-e="${i}"]`); if(!pe) return; pe.classList.add('hl');
+    const e=TX_EDGES[i], G=RT.geo[i], t=0.55, u=1-t, pt={x:u*u*G[0]+2*u*t*G[2]+t*t*G[4], y:u*u*G[1]+2*u*t*G[3]+t*t*G[5]}, txt=ratioLbl(e)+(e.g?` ·${e.g}`:'');
+    const w=txt.length*9+14;
+    lh+=`<g class="rt-lb" transform="translate(${pt.x.toFixed(1)},${pt.y.toFixed(1)})"><rect x="${-w/2}" y="-12" width="${w}" height="22" rx="11" stroke="${e.hop?'#FBBF24':(TX_CUR.find(c=>c.id===e.f)||{}).color||'#888'}"/><text y="4">${txt}</text></g>`; });
+  lg.innerHTML=lh;
+  nodes.forEach(n=>{ const g=svg.querySelector(`.rt-n[data-id="${n}"]`); if(g) g.classList.add('hl'); });
+  const f=svg.querySelector(`.rt-n[data-id="${id}"]`); if(f) f.classList.add('focus');
+}
+
+function rtSelect(id){ RT.sel=(RT.sel===id?null:id); rtApplySel(); rtPanel(); const h=document.querySelector('.rt-hint'); if(h) h.textContent=RT.sel?`${TX_NAME(RT.sel)} · routes listed below ↓`:'Pinch / drag · tap a node'; }
+function rtFilter(f,btn){ RT.filter=f; document.querySelectorAll('.rt-f[data-f]').forEach(b=>b.classList.toggle('on',b===btn)); if(RT.sel&&!rtVisible(RT.sel)) RT.sel=null; rtDraw(); rtPanel(); }
+function rtToggleHops(btn){ RT.hops=!RT.hops; btn.classList.toggle('on',RT.hops); rtDraw(); rtPanel(); }
+function rtFind(q){ const p=TX_PROG.find(x=>x.name.toLowerCase()===q.toLowerCase())||TX_PROG.find(x=>x.name.toLowerCase().includes(q.toLowerCase())||x.short.toLowerCase().includes(q.toLowerCase()));
+  if(!p) return; if(!rtVisible(p.id)){ RT.filter='all'; document.querySelectorAll('.rt-f[data-f]').forEach(b=>b.classList.toggle('on',b.dataset.f==='all')); rtDraw(); }
+  RT.sel=null; rtSelect(p.id); const [x,y]=RT.pos[p.id]; RT.tf={k:1.6,x:500-x*1.6,y:500-y*1.6}; rtApplyTf(); document.getElementById('rt-q').value=''; }
+function rtReset(){ RT.tf={x:0,y:0,k:1}; RT.sel=null; rtApplyTf(); rtApplySel(); rtPanel(); const h=document.querySelector('.rt-hint'); if(h) h.textContent='Pinch / drag · tap a node'; }
+
+function rtPathHtml(p){
+  let h=`<span class="rt-pc" style="border-color:${(TX_CUR.find(c=>c.id===p.from)||{}).color}">${TX_NAME(p.from)}</span>`;
+  p.edges.forEach(e=>{ h+=`<span class="rt-arrow">${ratioLbl(e)}${e.g?`<em>${e.g}</em>`:''}→</span><span class="rt-pc${e.hop?' hop':''}">${TX_NAME(e.t)}</span>`; });
+  return h;
+}
+function rtNotes(p){
+  const n=[]; p.edges.forEach(e=>{ if(e.g==='A') n.push('Group A cap'); if(e.g==='B'&&e.t!=='LH') n.push('Group B cap'); if(e.tat) n.push(e.tat); if(e.note) n.push(e.note); if(e.st==='cut') n.push('reduced ratio'); });
+  return [...new Set(n)].join(' · ');
+}
+function rtPanel(){
+  const el=document.getElementById('rt-panel'); if(!el) return;
+  const V=getVals(), id=RT.sel, fmt=n=>n>=100?Math.round(n).toLocaleString('en-IN'):(+n.toFixed(2)).toString();
+  if(!id){
+    let h=`<div class="rt-sec">Best exit per currency <span>₹ value per bank point · ≤3 transfers${RT.hops?'':' · hops off'}</span></div>`;
+    TX_CUR.forEach(c=>{
+      const best=txBestByDest(c.id,{hops:RT.hops}).filter(p=>rtVisible(p.to)).slice(0,4);
+      h+=`<div class="rt-card"><div class="rt-ch" onclick="rtSelect('${c.id}')"><span class="rt-dot" style="background:${c.color}"></span><b>${c.name}</b><small>${c.cards}</small><span class="rt-go">›</span></div>`;
+      best.forEach(p=>{ h+=`<div class="rt-row" onclick="rtSelect('${p.to}')"><div class="rt-path">${rtPathHtml(p)}</div><div class="rt-val"><b>₹${p.value.toFixed(2)}</b><small>1k → ${fmt(p.ratio*1000)}</small></div></div>`; });
+      h+=`</div>`;
+    });
+    h+=`<div class="rt-foot">Values use your anchors (KrisFlyer ₹1.6, Accor ₹2.1, Bonvoy ₹0.8) and editable estimates for the rest — tap any program to change its ₹/pt. Ratios checked ${DATA_ASOF}; confirm on the bank portal before moving points.</div>`;
+    el.innerHTML=h; return;
+  }
+  const cur=TX_CUR.find(c=>c.id===id);
+  if(cur){
+    const best=txBestByDest(id,{hops:RT.hops}).filter(p=>rtVisible(p.to));
+    let h=`<div class="rt-card sel"><div class="rt-ch"><span class="rt-dot" style="background:${cur.color}"></span><b>${cur.name}</b><small>${cur.cards}</small><span class="rt-go" onclick="rtSelect('${id}')">✕</span></div><div class="rt-note">${cur.note}</div>
+      <div class="rt-sec in">All reachable programs, best route each</div>`;
+    best.forEach((p,i)=>{ h+=`<div class="rt-row" onclick="rtSelect('${p.to}')"><div class="rt-rank">${i+1}</div><div class="rt-path">${rtPathHtml(p)}<div class="rt-sub">${rtNotes(p)}</div></div><div class="rt-val"><b>₹${p.value.toFixed(2)}</b><small>1k → ${fmt(p.ratio*1000)}</small></div></div>`; });
+    el.innerHTML=h+'</div>'; return;
+  }
+  const prog=TX_PROG.find(p=>p.id===id);
+  let routes=[]; TX_CUR.forEach(c=>txPaths(c.id,{hops:RT.hops}).filter(p=>p.to===id).forEach(p=>routes.push(p)));
+  routes=txPrune(routes);
+  let h=`<div class="rt-card sel"><div class="rt-ch"><span class="rt-dot" style="background:${prog.t==='hotel'?'var(--purple)':'var(--accent)'}"></span><b>${prog.name}</b><small>${prog.t==='hotel'?'Hotel':'Airline'}${prog.al?' · '+prog.al:''}</small><span class="rt-go" onclick="rtSelect('${id}')">✕</span></div>
+    <div class="rt-valedit">Value ₹ <input type="number" step="0.05" value="${V[id]}" onchange="setVal('${id}',this.value)"> per point ${prog.anchor?'<span class="tag tg">your anchor</span>':'<span class="tag to">estimate</span>'}</div>
+    ${TX_NODE_NOTE[id]?`<div class="rt-note">${TX_NODE_NOTE[id]}</div>`:''}
+    <div class="rt-sec in">${routes.length} route${routes.length!==1?'s':''} · ranked by ₹ per bank point</div>`;
+  if(!routes.length) h+=`<div class="rt-note">No route from your cards${RT.hops?'':' (try turning hops on)'}.</div>`;
+  routes.forEach((p,i)=>{ h+=`<div class="rt-row"><div class="rt-rank">${i+1}</div><div class="rt-path">${rtPathHtml(p)}<div class="rt-sub">${p.edges.length>1?p.edges.length+' transfers · ':''}${rtNotes(p)}</div></div><div class="rt-val"><b>₹${p.value.toFixed(2)}</b><small>1k → ${fmt(p.ratio*1000)}</small></div></div>`; });
+  el.innerHTML=h+'</div>';
+}
+
+function rtBindGestures(){
+  const svg=document.getElementById('rt-svg'), pts=new Map(); let start=null, pinch=null;
+  const scale=()=>{ const r=svg.getBoundingClientRect(); return Math.min(r.width,r.height)/1000; };
+  const toSvg=(cx,cy)=>{ const r=svg.getBoundingClientRect(), s=scale(); return [(cx-r.left-(r.width-1000*s)/2)/s,(cy-r.top-(r.height-1000*s)/2)/s]; };
+  const zoomAt=(sx,sy,f)=>{ const t=RT.tf, k=Math.max(0.6,Math.min(5,t.k*f)); f=k/t.k; t.x=sx-(sx-t.x)*f; t.y=sy-(sy-t.y)*f; t.k=k; rtApplyTf(); };
+  svg.addEventListener('pointerdown',e=>{ svg.setPointerCapture(e.pointerId); pts.set(e.pointerId,[e.clientX,e.clientY]);
+    if(pts.size===1) start={x:e.clientX,y:e.clientY,t:Date.now(),tx:RT.tf.x,ty:RT.tf.y,tgt:e.target,moved:false};
+    if(pts.size===2){ const [a,b]=[...pts.values()]; pinch={d:Math.hypot(a[0]-b[0],a[1]-b[1]),k:RT.tf.k}; if(start) start.moved=true; } });
+  svg.addEventListener('pointermove',e=>{ if(!pts.has(e.pointerId)) return; pts.set(e.pointerId,[e.clientX,e.clientY]);
+    if(pts.size===2&&pinch){ const [a,b]=[...pts.values()], d=Math.hypot(a[0]-b[0],a[1]-b[1]); const [sx,sy]=toSvg((a[0]+b[0])/2,(a[1]+b[1])/2); zoomAt(sx,sy,(pinch.k*d/pinch.d)/RT.tf.k); return; }
+    if(pts.size===1&&start){ const dx=e.clientX-start.x, dy=e.clientY-start.y; if(Math.hypot(dx,dy)>6) start.moved=true;
+      if(start.moved){ const s=scale(); RT.tf.x=start.tx+dx/s; RT.tf.y=start.ty+dy/s; rtApplyTf(); } } });
+  const end=e=>{ pts.delete(e.pointerId); if(pts.size<2) pinch=null;
+    if(pts.size===0&&start){ if(!start.moved&&Date.now()-start.t<450){ const g=start.tgt.closest&&start.tgt.closest('[data-id]'); if(g) rtSelect(g.dataset.id); else if(RT.sel){ RT.sel=null; rtApplySel(); rtPanel(); } } start=null; } };
+  svg.addEventListener('pointerup',end); svg.addEventListener('pointercancel',end);
+  svg.addEventListener('wheel',e=>{ e.preventDefault(); const [sx,sy]=toSvg(e.clientX,e.clientY); zoomAt(sx,sy,e.deltaY<0?1.12:1/1.12); },{passive:false});
+}
+
+// compact transfer table for the AI system prompt
+function txPromptTable(){
+  const V=getVals();
+  const cur=TX_CUR.map(c=>`${c.name} [${c.cards}] (${c.note}): `+TX_EDGES.filter(e=>e.f===c.id).map(e=>`${TX_NAME(e.t)} ${ratioLbl(e)}${e.g?' G'+e.g:''}${e.st==='intro'?' intro':''}`).join(', ')).join('\n');
+  const hops='Program hops: '+[...new Set(TX_EDGES.filter(e=>e.hop).map(e=>`${TX_NAME(e.f)}→${TX_NAME(e.t)} ${ratioLbl(e)}`))].join(', ');
+  const vals='₹/pt values: '+TX_PROG.map(p=>`${p.short} ${V[p.id]}${p.anchor?'*':''}`).join(', ')+' (*=user anchor)';
+  return cur+'\n'+hops+'\n'+vals;
+}
+
 // INIT
 buildSpend(); buildMiles(); buildNews(); buildLoyalty(); buildCards(); buildOpt();
+// PWA: service worker + iOS install hint
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){ window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{})); }
+(function(){ const ios=/iphone|ipad|ipod/i.test(navigator.userAgent), standalone=navigator.standalone||matchMedia('(display-mode: standalone)').matches;
+  let dismissed=false; try{ dismissed=localStorage.getItem('ciq_ioshint')==='1'; }catch(e){}
+  if(ios&&!standalone&&!dismissed){ const d=document.createElement('div'); d.className='ios-hint';
+    d.innerHTML='📲 <b>Install CardIQ:</b> tap <b>Share</b> → <b>Add to Home Screen</b>. Opens full-screen, works offline.<button aria-label="Dismiss">✕</button>';
+    d.querySelector('button').onclick=()=>{ d.remove(); try{localStorage.setItem('ciq_ioshint','1')}catch(e){} }; document.body.appendChild(d); } })();
 // Wire chat input events (panel is always in DOM)
 document.getElementById('ci').addEventListener('input',function(){this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'});
 document.getElementById('ci').addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
