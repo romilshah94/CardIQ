@@ -569,6 +569,7 @@ button{cursor:pointer}
 .gmail-apply-btn{margin:12px 18px;height:48px;border:none;border-radius:12px;background:var(--text);color:var(--bg);font-weight:550}
 .txn-item{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
 .txn-item.sel{opacity:1}.txn-item:not(.sel){opacity:.45}
+.txn-item{cursor:pointer}
 .txn-info{flex:1;min-width:0}
 .txn-merchant{font-size:14px;font-weight:550}
 .txn-detail{font-size:12px;color:var(--muted)}
@@ -1831,60 +1832,107 @@ async function _handleGToken(resp){
   }
 }
 
-async function _fetchGmail(token){
-  const q=encodeURIComponent('(from:(alerts@hdfcbank.net OR infoindia@americanexpress.com OR alerts@axisbank.com OR notify@alerts.hsbc.co.in OR alerts@hsbc.co.in OR txnalert@axisbank.com) OR subject:(spent on your OR debit alert OR credit card transaction)) newer_than:90d');
-  const listR=await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${q}&maxResults=75`,{headers:{Authorization:`Bearer ${token}`}});
-  if(!listR.ok) throw new Error('Gmail API '+listR.status+' — check Client ID & scopes');
-  const list=await listR.json();
-  const msgs=list.messages||[];
-  const sub=document.getElementById('gmail-scan-sub');
-  if(!msgs.length){ if(sub) sub.textContent='No transaction emails found'; return; }
-  if(sub) sub.textContent=`Fetching ${msgs.length} emails…`;
-  const details=await Promise.all(msgs.slice(0,60).map(m=>
-    fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date`,
-      {headers:{Authorization:`Bearer ${token}`}}).then(r=>r.json())
-  ));
-  _gmailTxns=_parseTxns(details);
-  if(sub) sub.textContent=`Found ${_gmailTxns.length} transactions`;
-  _showGmailSheet(_gmailTxns);
+// ── Gmail transaction sync ──
+// Incremental: only unseen message IDs are fetched. Parsed txns are stored locally
+// with their message IDs, so re-scans never double count. Milestones are RECOMPUTED
+// from stored txns on apply (not added to), so applying twice is safe.
+const GM_Q='(from:(alerts@hdfcbank.net OR infoindia@americanexpress.com OR alerts@axisbank.com OR notify@alerts.hsbc.co.in OR alerts@hsbc.co.in OR txnalert@axisbank.com) OR subject:(spent OR debit OR "credit card transaction" OR "transaction alert")) newer_than:120d';
+const GM_SEEN_KEY='ciq_gmail_seen', GM_TXN_KEY='ciq_gmail_txns';
+const GM_CARD={dcb:'DCB Metal',mrcc:'Amex MRCC',pt:'Amex Plat Travel',pc:'Amex Plat Charge',amex:'Amex',hsbc:'HSBC',axis:'Axis',hdfc:'HDFC (other)',other:'Card'};
+function _gmLoad(){ try{ return JSON.parse(localStorage.getItem(GM_TXN_KEY)||'[]').map(t=>({...t,date:new Date(t.date)})); }catch(e){ return []; } }
+function _gmSave(list){ try{ localStorage.setItem(GM_TXN_KEY,JSON.stringify(list.slice(-800).map(t=>({...t,date:t.date.toISOString()})))); }catch(e){} }
+function _gmSeen(){ try{ return new Set(JSON.parse(localStorage.getItem(GM_SEEN_KEY)||'[]')); }catch(e){ return new Set(); } }
+function _gmInPeriod(def,d){
+  if(def.periodKey===QTR.key) return _qInfo(d).key===QTR.key;
+  if(def.periodKey===MON.key) return _mInfo(d).key===MON.key;
+  return true; // card-year milestones: no date window yet
 }
-
-function _parseTxns(emails){
+function _gmTargets(t){
+  if(t.cardKey==='dcb') return ['dcb_q','dcb_yr'];
+  if(t.cardKey==='pt') return ['amex_pt2','amex_pt3'];
+  if(t.cardKey==='mrcc') return ['mrcc_20k','mrcc_mo'];
+  return [];
+}
+async function _gmApi(path,token){
+  for(let a=0;a<4;a++){
+    const r=await fetch('https://gmail.googleapis.com/gmail/v1/users/me/'+path,{headers:{Authorization:`Bearer ${token}`}});
+    if(r.status===429||r.status>=500){ await new Promise(s=>setTimeout(s,400*2**a)); continue; }
+    if(!r.ok) throw new Error('Gmail API '+r.status+(r.status===401?' — sign in again':''));
+    return r.json();
+  }
+  throw new Error('Gmail busy, try again');
+}
+async function _fetchGmail(token){
+  const sub=document.getElementById('gmail-scan-sub'), say=t=>{ if(sub) sub.textContent=t; };
+  const seen=_gmSeen(); const ids=[]; let page='', pages=0;
+  do{
+    const d=await _gmApi(`messages?q=${encodeURIComponent(GM_Q)}&maxResults=100${page?'&pageToken='+page:''}`,token);
+    (d.messages||[]).forEach(m=>{ if(!seen.has(m.id)&&!ids.includes(m.id)) ids.push(m.id); });
+    page=d.nextPageToken||''; pages++; say(`Listing… ${ids.length} new`);
+  }while(page && pages<10);
+  if(!ids.length){ say('Up to date · no new emails'); _gmShowPeriod(); return; }
+  const got=[]; let i=0;
+  const worker=async()=>{ while(i<ids.length){ const id=ids[i++]; try{ got.push(await _gmApi(`messages/${id}?format=full`,token)); }catch(e){} say(`Reading ${got.length}/${ids.length}…`); } };
+  await Promise.all(Array.from({length:6},worker));
+  const fresh=_parseTxns(got);
+  // mark every successfully fetched email as seen (including non-transactions)
+  got.forEach(m=>seen.add(m.id));
+  try{ localStorage.setItem(GM_SEEN_KEY,JSON.stringify([...seen].slice(-4000))); }catch(e){}
+  const byId=new Map(_gmLoad().map(t=>[t.msgId,t]));
+  fresh.forEach(t=>byId.set(t.msgId,t));
+  _gmSave([...byId.values()]);
+  say(`Added ${fresh.length} new · ${got.length-fresh.length} non-transaction emails skipped`);
+  _gmShowPeriod();
+}
+function _gmBody(p){
+  let text='';
+  const walk=x=>{
+    if(!x) return;
+    if(x.mimeType==='text/plain'&&x.body&&x.body.data){
+      const bin=atob(x.body.data.replace(/-/g,'+').replace(/_/g,'/'));
+      text+=new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0)))+'\n';
+    }
+    if(x.parts) x.parts.forEach(walk);
+  };
+  walk(p);
+  return text;
+}
+function _parseTxns(msgs){
   const out=[];
-  for(const e of emails){
-    if(!e.payload) continue;
-    const hdr=Object.fromEntries((e.payload.headers||[]).map(h=>[h.name,h.value]));
-    const subj=hdr.Subject||'', from=hdr.From||'', dateStr=hdr.Date||'';
-    const txn=_parseLine(subj,from,new Date(dateStr));
-    if(txn) out.push(txn);
+  for(const m of msgs){
+    const t=_parseMsg(m);
+    if(t) out.push(t);
   }
   return out.sort((a,b)=>b.date-a.date);
 }
-
-function _parseLine(subj,from,date){
-  // Match Indian bank alert patterns
-  const amtM=subj.match(/(?:INR|Rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)/i);
+function _parseMsg(m){
+  if(!m||!m.payload) return null;
+  const hdr=Object.fromEntries((m.payload.headers||[]).map(h=>[h.name,h.value]));
+  const subj=hdr.Subject||'', from=hdr.From||'';
+  const body=_gmBody(m.payload)||(m.snippet||'');
+  const txt=`${subj}\n${m.snippet||''}\n${body}`;
+  // reject credits, refunds, declines, bill payments, OTPs
+  if(/\b(credited|refund|reversal|reversed|declined|failed|unsuccessful|not successful|payment received|bill payment|otp)\b/i.test(txt)) return null;
+  if(!/\b(debited|spent|charged|transaction|txn|purchase|paid|used)\b/i.test(txt)) return null;
+  const amtM=txt.match(/(?:INR|Rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)/i);
   if(!amtM) return null;
   const amount=parseFloat(amtM[1].replace(/,/g,''));
   if(!amount||amount<1||amount>10000000) return null;
-
-  const src=(from+' '+subj).toLowerCase();
-  let card='',cardId='',cardShort='';
-  if(/hdfc|diners|dcb/.test(src)){card='DCB Metal';cardId='dcb_q';cardShort='DCB';}
-  else if(/mrcc|membership reward/.test(src)){card='Amex MRCC';cardId='mrcc_20k';cardShort='MRCC';}
-  else if(/amex|american express|platinum travel/.test(src)){card='Amex Plat Travel';cardId='amex_pt2';cardShort='Amex PT';}
-  else if(/amex|american express/.test(src)){card='Amex';cardId='';cardShort='Amex';}
-  else if(/hsbc/.test(src)){card='HSBC';cardId='';cardShort='HSBC';}
-  else if(/axis/.test(src)){card='Axis';cardId='';cardShort='Axis';}
-  else{card='Card';cardId='';cardShort='';}
-
-  const mM=subj.match(/(?:at|merchant[:\s]+|towards)\s+([A-Za-z][A-Za-z0-9\s&'.,-]{2,28}?)(?:\s+on\s+|\s+dated|\s+for\s+|\s*$)/i);
-  const merchant=mM?mM[1].trim():'Unknown';
-  const cat=_inferCat(merchant);
-
-  return {amount,merchant,card,cardId,cardShort,cat,date,sel:true};
+  const last4=(txt.match(/(?:ending|xx+|\*{2,}|x{2,})\s*(\d{4})/i)||[])[1]||'';
+  const src=(from+' '+subj+' '+body.slice(0,400)).toLowerCase();
+  let cardKey='other';
+  if(/diners|dcb|black metal/.test(src)) cardKey='dcb';
+  else if(/membership reward|mrcc/.test(src)) cardKey='mrcc';
+  else if(/platinum charge|charge card/.test(src)) cardKey='pc';
+  else if(/platinum travel|plat travel/.test(src)) cardKey='pt';
+  else if(/amex|american express/.test(src)) cardKey='amex';
+  else if(/hsbc/.test(src)) cardKey='hsbc';
+  else if(/axis/.test(src)) cardKey='axis';
+  else if(/hdfc/.test(src)) cardKey='hdfc';
+  const mM=txt.match(/(?:at|merchant[:\s]+|towards)\s+([A-Za-z][A-Za-z0-9\s&'.,-]{2,28}?)(?:\s+on\s+|\s+dated|\s+for\s+|\s*\n|\s*$)/i);
+  const merchant=mM?mM[1].trim().replace(/[.,\s-]+$/,''):'Unknown';
+  return {msgId:m.id,amount,merchant,cardKey,cardLabel:GM_CARD[cardKey],last4,cat:_inferCat(merchant),date:new Date(hdr.Date||Date.now()),sel:true};
 }
-
 function _inferCat(m){
   const s=m.toLowerCase();
   if(/marriott|accor|hilton|hyatt|ihg|sheraton|westin|taj|oberoi|itc hotel/.test(s)) return 'Hotel Direct';
@@ -1895,50 +1943,58 @@ function _inferCat(m){
   if(/swiggy|zomato|dominos|mcdonalds|starbucks|café|restaurant|pizza|biryani/.test(s)) return 'Dining';
   return 'INR Shopping';
 }
-
-function _showGmailSheet(txns){
-  const list=document.getElementById('gmail-txn-list');
-  if(!txns.length){list.innerHTML='<div style="text-align:center;color:var(--muted);padding:20px">No transactions parsed</div>';return;}
-  list.innerHTML=txns.map((t,i)=>`
-    <div class="txn-item${t.sel?' sel':''}" onclick="_toggleTxn(${i})">
-      <div class="txn-check${t.sel?' on':''}">${t.sel?'✓':''}</div>
-      <div class="txn-info">
-        <div class="txn-merchant">${t.merchant}</div>
-        <div class="txn-detail">${t.cardShort||t.card} · ${t.cat} · ${t.date.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</div>
-      </div>
-      <div class="txn-amt">₹${t.amount.toLocaleString('en-IN')}</div>
-    </div>`).join('');
-  document.getElementById('gmail-sheet-bg').classList.add('on');
-}
-
-function _toggleTxn(i){
-  _gmailTxns[i].sel=!_gmailTxns[i].sel;
+function _gmShowPeriod(){
+  _gmailTxns=_gmLoad().filter(t=>_qInfo(t.date).key===QTR.key||_mInfo(t.date).key===MON.key).sort((a,b)=>b.date-a.date);
+  const sub=document.getElementById('gmail-scan-sub');
+  if(sub&&!sub.textContent) sub.textContent=`${_gmailTxns.length} this quarter`;
   _showGmailSheet(_gmailTxns);
 }
-
-function closeGmailSheet(){
-  document.getElementById('gmail-sheet-bg').classList.remove('on');
+function _showGmailSheet(txns){
+  const list=document.getElementById('gmail-txn-list');
+  if(!txns.length){ list.innerHTML='<div style="text-align:center;color:var(--muted);padding:24px 0">No card transactions this quarter yet.</div>'; document.getElementById('gmail-sheet-bg').classList.add('on'); return; }
+  list.innerHTML=txns.map((t,i)=>{
+    const tgt=_gmTargets(t).length?'':`<span style="color:var(--muted)"> · not tracked</span>`;
+    return `<div class="txn-item${t.sel!==false?' sel':''}" onclick="_toggleTxn(${i})">
+      <div class="txn-info">
+        <div class="txn-merchant">${esc(t.merchant)}</div>
+        <div class="txn-detail">${t.cardLabel}${t.last4?` ····${t.last4}`:''} · ${t.cat} · ${t.date.toLocaleDateString('en-IN',{day:'numeric',month:'short'})}${tgt}</div>
+      </div>
+      <div class="txn-amt">₹${t.amount.toLocaleString('en-IN')}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('gmail-sheet-bg').classList.add('on');
 }
-
+function _toggleTxn(i){
+  _gmailTxns[i].sel=_gmailTxns[i].sel===false;
+  const all=_gmLoad(), t=all.find(x=>x.msgId===_gmailTxns[i].msgId);
+  if(t) t.sel=_gmailTxns[i].sel;
+  _gmSave(all);
+  _showGmailSheet(_gmailTxns);
+}
+function closeGmailSheet(){ document.getElementById('gmail-sheet-bg').classList.remove('on'); }
 function applyGmailTransactions(){
-  const sel=_gmailTxns.filter(t=>t.sel&&t.cardId);
-  const totals={};
-  sel.forEach(t=>{
-    if(!totals[t.cardId]) totals[t.cardId]=0;
-    totals[t.cardId]+=t.amount;
+  // recompute each tracked milestone from stored, selected txns in its period
+  const stored=_gmLoad().filter(t=>t.sel!==false);
+  const changed=[];
+  MS_DEFS.forEach(def=>{
+    if(!def.periodKey) return;
+    let total=0;
+    stored.forEach(t=>{
+      if(!_gmTargets(t).includes(def.id)||!_gmInPeriod(def,t.date)) return;
+      if(def.type==='transaction'){ if(t.amount>=(def.txnMin||0)) total+=1; }
+      else total+=t.amount;
+    });
+    if(!_gmTargets({cardKey:'dcb'}).includes(def.id)&&!_gmTargets({cardKey:'pt'}).includes(def.id)&&!_gmTargets({cardKey:'mrcc'}).includes(def.id)) return;
+    MS[def.id]=total; changed.push(def.id);
+    const inp=document.getElementById('msi-'+def.id);
+    if(inp){ inp.value=total; }
   });
-  Object.entries(totals).forEach(([id,amt])=>{
-    const cur=MS[id]||0;
-    MS[id]=cur+amt;
-    const inp=document.getElementById('msi-'+id);
-    if(inp){inp.value=MS[id];updateMs(id,MS[id]);}
-    if(id==='amex_pt2'){ MS.amex_pt3=(MS.amex_pt3||0)+amt; const i3=document.getElementById('msi-amex_pt3'); if(i3){i3.value=MS.amex_pt3;updateMs('amex_pt3',MS.amex_pt3);} }
-  });
+  changed.forEach(id=>{ const d=MS_DEFS.find(m=>m.id===id); if(d&&d.type==='spend') updateMs(id,MS[id]); });
   saveMS();
   closeGmailSheet();
-  const totalAmt=Object.values(totals).reduce((a,b)=>a+b,0);
   const sub=document.getElementById('gmail-scan-sub');
-  if(sub) sub.textContent=`Applied ${sel.length} txn${sel.length!==1?'s':''} · ₹${totalAmt.toLocaleString('en-IN')} added`;
+  if(sub) sub.textContent=`Milestones updated from ${stored.length} stored transactions`;
+  if(typeof buildMiles==='function' && curScreen==='miles') buildMiles();
 }
 
 // ══════════════════════════════════════════════════════════
