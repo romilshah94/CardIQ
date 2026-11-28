@@ -1836,9 +1836,11 @@ async function _handleGToken(resp){
 // Incremental: only unseen message IDs are fetched. Parsed txns are stored locally
 // with their message IDs, so re-scans never double count. Milestones are RECOMPUTED
 // from stored txns on apply (not added to), so applying twice is safe.
-const GM_Q='(from:(alerts@hdfcbank.net OR infoindia@americanexpress.com OR alerts@axisbank.com OR notify@alerts.hsbc.co.in OR alerts@hsbc.co.in OR txnalert@axisbank.com) OR subject:(spent OR debit OR "credit card transaction" OR "transaction alert")) newer_than:120d';
+const GM_Q='from:(axis.bank.in OR hsbc.bank.in OR hdfcbank.bank.in OR americanexpress.com) (subject:"spent on credit card" OR subject:"Transaction alert on Axis Bank Credit Card" OR subject:"Credit Card Transaction Alert" OR subject:"A payment was made using your Credit Card" OR subject:charged OR subject:"card transaction") newer_than:120d';
 const GM_SEEN_KEY='ciq_gmail_seen', GM_TXN_KEY='ciq_gmail_txns';
-const GM_CARD={dcb:'DCB Metal',mrcc:'Amex MRCC',pt:'Amex Plat Travel',pc:'Amex Plat Charge',amex:'Amex',hsbc:'HSBC',axis:'Axis',hdfc:'HDFC (other)',other:'Card'};
+const GM_CARD={dcb:'DCB Metal',mrcc:'Amex MRCC',pt:'Amex Plat Travel',pc:'Amex Plat Charge',amex:'Amex',hsbc:'HSBC',axis:'Axis Atlas',hdfc:'HDFC (other)',other:'Card'};
+const GM_LAST4={'5631':'axis','9440':'hsbc','2523':'dcb'};
+function _gmCardMap(){ let u={}; try{u=JSON.parse(localStorage.getItem('ciq_gmail_cards')||'{}')}catch(e){} return Object.assign({},GM_LAST4,u); }
 function _gmLoad(){ try{ return JSON.parse(localStorage.getItem(GM_TXN_KEY)||'[]').map(t=>({...t,date:new Date(t.date)})); }catch(e){ return []; } }
 function _gmSave(list){ try{ localStorage.setItem(GM_TXN_KEY,JSON.stringify(list.slice(-800).map(t=>({...t,date:t.date.toISOString()})))); }catch(e){} }
 function _gmSeen(){ try{ return new Set(JSON.parse(localStorage.getItem(GM_SEEN_KEY)||'[]')); }catch(e){ return new Set(); } }
@@ -1884,54 +1886,76 @@ async function _fetchGmail(token){
   say(`Added ${fresh.length} new · ${got.length-fresh.length} non-transaction emails skipped`);
   _gmShowPeriod();
 }
+function _gmB64(d){ const bin=atob(d.replace(/-/g,'+').replace(/_/g,'/')); return new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0))); }
 function _gmBody(p){
-  let text='';
+  let plain='', html='';
   const walk=x=>{
     if(!x) return;
-    if(x.mimeType==='text/plain'&&x.body&&x.body.data){
-      const bin=atob(x.body.data.replace(/-/g,'+').replace(/_/g,'/'));
-      text+=new TextDecoder().decode(Uint8Array.from(bin,c=>c.charCodeAt(0)))+'\n';
+    if(x.body&&x.body.data){
+      if(x.mimeType==='text/plain') plain+=_gmB64(x.body.data)+'\n';
+      else if(x.mimeType==='text/html') html+=_gmB64(x.body.data)+'\n';
     }
     if(x.parts) x.parts.forEach(walk);
   };
   walk(p);
-  return text;
+  if(plain.trim()) return plain;
+  return html.replace(/<(style|script)[\s\S]*?<\/\1>/gi,' ').replace(/<br\s*\/?>|<\/(p|tr|div)>/gi,' ')
+    .replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&#39;|&rsquo;|&#8217;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>');
 }
 function _parseTxns(msgs){
   const out=[];
-  for(const m of msgs){
-    const t=_parseMsg(m);
-    if(t) out.push(t);
-  }
+  for(const m of msgs){ const t=_parseMsg(m); if(t) out.push(t); }
   return out.sort((a,b)=>b.date-a.date);
 }
+const _gmNum=x=>parseFloat(String(x).replace(/,/g,''));
 function _parseMsg(m){
   if(!m||!m.payload) return null;
   const hdr=Object.fromEntries((m.payload.headers||[]).map(h=>[h.name,h.value]));
-  const subj=hdr.Subject||'', from=hdr.From||'';
-  const body=_gmBody(m.payload)||(m.snippet||'');
-  const txt=`${subj}\n${m.snippet||''}\n${body}`;
-  // reject credits, refunds, declines, bill payments, OTPs
-  if(/\b(credited|refund|reversal|reversed|declined|failed|unsuccessful|not successful|payment received|bill payment|otp)\b/i.test(txt)) return null;
-  if(!/\b(debited|spent|charged|transaction|txn|purchase|paid|used)\b/i.test(txt)) return null;
-  const amtM=txt.match(/(?:INR|Rs\.?|₹)\s*([\d,]+(?:\.\d{1,2})?)/i);
-  if(!amtM) return null;
-  const amount=parseFloat(amtM[1].replace(/,/g,''));
+  const subj=hdr.Subject||'', from=(hdr.From||'').toLowerCase();
+  const body=(_gmBody(m.payload)||'').replace(/\s+/g,' ').trim();
+  // core = text from the greeting onward; skips tracking-link junk and keeps footers (which mention OTP) out of the checks
+  const di=body.search(/Dear |Here's the summary|We.re writing to confirm/i);
+  const core=body.slice(di>=0?di:0,(di>=0?di:0)+700);
+  const head=`${subj} ${core}`;
+  if(/\b(credited|refund|reversal|reversed|declined|failed|unsuccessful|payment received|bill payment|one[- ]time password|upi)\b/i.test(head)) return null;
+  if(/\botp\b/i.test(subj)) return null;
+  let bank='', amount=0, cur='INR', merchant='', last4='';
+  let mm;
+  if(/axis\.bank\.in|axisbank/.test(from)){
+    bank='axis';
+    if(!/credit card/i.test(head)) return null;           // skips "Debit transaction alert for Axis Bank A/c"
+    mm=core.match(/Transaction amount(?: \(INR\))?:?\s*([A-Z]{3})\s*([\d,]+(?:\.\d+)?)/i);
+    if(!mm) return null; cur=mm[1].toUpperCase(); amount=_gmNum(mm[2]);
+    merchant=((core.match(/Merchant name:?\s*(.+?)\s+Axis Bank Credit Card/i)||[])[1]||'').trim();
+    last4=(core.match(/Credit Card No\.?:?\s*XX(\d{4})/i)||[])[1]||'';
+  } else if(/hsbc/.test(from)){
+    bank='hsbc';
+    mm=core.match(/Credit Card xx(\d{4}) was used for a transaction of ([A-Z]{3}) ([\d,]+(?:\.\d+)?) at (.+?) on \d{1,2}\/\d{1,2}\/\d{2,4}/i);
+    if(!mm) return null; last4=mm[1]; cur=mm[2].toUpperCase(); amount=_gmNum(mm[3]); merchant=mm[4].trim();
+  } else if(/hdfcbank|hdfc\.bank/.test(from)){
+    bank='hdfc';
+    mm=core.match(/(?:Rs\.?|INR)\s*([\d,]+(?:\.\d+)?) has been debited from your HDFC Bank Credit Card ending (\d{4}) towards (.+?) on \d{1,2} \w{3},? \d{4}/i);
+    if(!mm) return null; amount=_gmNum(mm[1]); last4=mm[2]; merchant=mm[3].trim();
+  } else {
+    // Amex and anything else: generic debit wording
+    if(/promo|offer|reward|upgrade|webinar/i.test(subj)) return null;
+    mm=head.match(/(INR|Rs\.?|₹)\s*([\d,]+(?:\.\d+)?)[^.]{0,80}?(?:charged|spent|debited)|(?:charged|spent|debited)[^.]{0,80}?(INR|Rs\.?|₹)\s*([\d,]+(?:\.\d+)?)/i);
+    if(!mm) return null; amount=_gmNum(mm[2]||mm[4]);
+    last4=(head.match(/(?:ending|xx+|\*{2,})\s*(\d{4})/i)||[])[1]||'';
+    merchant=((head.match(/\bat\s+([A-Za-z][A-Za-z0-9\s&'.-]{2,28}?)(?:\s+on\s|\.|$)/)||[])[1]||'').trim();
+    bank='amex';
+  }
+  if(cur!=='INR') return null;                           // foreign-currency alerts carry no INR amount
   if(!amount||amount<1||amount>10000000) return null;
-  const last4=(txt.match(/(?:ending|xx+|\*{2,}|x{2,})\s*(\d{4})/i)||[])[1]||'';
-  const src=(from+' '+subj+' '+body.slice(0,400)).toLowerCase();
-  let cardKey='other';
-  if(/diners|dcb|black metal/.test(src)) cardKey='dcb';
-  else if(/membership reward|mrcc/.test(src)) cardKey='mrcc';
-  else if(/platinum charge|charge card/.test(src)) cardKey='pc';
-  else if(/platinum travel|plat travel/.test(src)) cardKey='pt';
-  else if(/amex|american express/.test(src)) cardKey='amex';
-  else if(/hsbc/.test(src)) cardKey='hsbc';
-  else if(/axis/.test(src)) cardKey='axis';
-  else if(/hdfc/.test(src)) cardKey='hdfc';
-  const mM=txt.match(/(?:at|merchant[:\s]+|towards)\s+([A-Za-z][A-Za-z0-9\s&'.,-]{2,28}?)(?:\s+on\s+|\s+dated|\s+for\s+|\s*\n|\s*$)/i);
-  const merchant=mM?mM[1].trim().replace(/[.,\s-]+$/,''):'Unknown';
-  return {msgId:m.id,amount,merchant,cardKey,cardLabel:GM_CARD[cardKey],last4,cat:_inferCat(merchant),date:new Date(hdr.Date||Date.now()),sel:true};
+  merchant=(merchant||'Unknown').replace(/[.,\s-]+$/,'');
+  let cardKey=_gmCardMap()[last4]||bank;
+  if(bank==='amex'){
+    const src=(from+' '+head).toLowerCase();
+    if(/membership reward|mrcc/.test(src)) cardKey='mrcc';
+    else if(/platinum charge|charge card/.test(src)) cardKey='pc';
+    else if(/platinum travel|plat travel/.test(src)) cardKey='pt';
+  }
+  return {msgId:m.id,amount,merchant,cardKey,cardLabel:GM_CARD[cardKey]||GM_CARD.other,last4,cat:_inferCat(merchant),date:new Date(hdr.Date||Date.now()),sel:true};
 }
 function _inferCat(m){
   const s=m.toLowerCase();
